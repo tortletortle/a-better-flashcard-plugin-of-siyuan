@@ -125,6 +125,34 @@ const ACHIEVEMENTS = {
     xp: 20,
     condition: (stats) => stats.graphViews >= 1,
   },
+  // ==================== 隐藏成就 ====================
+  night_owl: {
+    id: "night_owl",
+    name: "夜猫子",
+    description: "在凌晨(0:00-5:00)复习",
+    icon: "🦉",
+    xp: 50,
+    hidden: true,
+    condition: (stats) => stats.nightReviews >= 1,
+  },
+  speed_demon: {
+    id: "speed_demon",
+    name: "闪电手",
+    description: "一天内生成20张闪卡",
+    icon: "⚡",
+    xp: 100,
+    hidden: true,
+    condition: (stats) => stats.maxCardsInDay >= 20,
+  },
+  comeback: {
+    id: "comeback",
+    name: "王者归来",
+    description: "中断7天后重新开始复习",
+    icon: "🔮",
+    xp: 80,
+    hidden: true,
+    condition: (stats) => stats.comebacks >= 1,
+  },
 };
 
 // ==================== AI 鼓励语模板 ====================
@@ -178,10 +206,16 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
       reviewDates: [],
       totalXP: 0,
       level: 1,
+      nightReviews: 0,
+      maxCardsInDay: 0,
+      cardsToday: 0,
+      todayDate: null,
+      comebacks: 0,
     };
 
     this.unlockedAchievements = new Set();
     this.recentEncouragements = [];
+    this._saveTimer = null;
 
     // 加载保存的数据
     this._loadStats();
@@ -225,6 +259,11 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
   }
 
   onunload() {
+    // 立即保存一次确保数据不丢失
+    if (this._saveTimer) {
+      clearTimeout(this._saveTimer);
+      this._saveTimer = null;
+    }
     this._saveStats();
 
     // 移除事件监听
@@ -242,25 +281,38 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
     console.log("闪卡成就系统已卸载");
   }
 
+  // ==================== 保存防抖 ====================
+  _debouncedSave() {
+    if (this._saveTimer) clearTimeout(this._saveTimer);
+    this._saveTimer = setTimeout(() => {
+      this._saveStats();
+      this._saveTimer = null;
+    }, 500);
+  }
+
   // ==================== 数据持久化 ====================
   async _loadStats() {
     try {
       const data = await this.loadData("stats.json");
       if (data) {
-        this.stats = data.stats || this.stats;
+        this.stats = { ...this.stats, ...(data.stats || {}) };
         this.unlockedAchievements = new Set(data.unlockedAchievements || []);
       }
     } catch (e) {
-      console.log("无存档数据，使用默认值");
+      console.error("成就数据加载失败:", e);
     }
   }
 
   async _saveStats() {
-    await this.saveData("stats.json", {
-      stats: this.stats,
-      unlockedAchievements: Array.from(this.unlockedAchievements),
-    });
-    this._refreshDock();
+    try {
+      await this.saveData("stats.json", {
+        stats: this.stats,
+        unlockedAchievements: Array.from(this.unlockedAchievements),
+      });
+      this._refreshDock();
+    } catch (e) {
+      console.error("成就数据保存失败:", e);
+    }
   }
 
   _refreshDock() {
@@ -321,13 +373,21 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
   // ==================== 行为追踪 ====================
   trackCardGenerated(detail = {}) {
     this.stats.totalCardsGenerated++;
+    this._trackCardsToday();
     this.checkAchievements();
     this.showEncouragement("card_generated");
-    this._saveStats();
+    this._debouncedSave();
   }
 
   trackReview(detail = {}) {
     this.stats.totalReviews++;
+
+    // 检测凌晨复习
+    const hour = new Date().getHours();
+    if (hour >= 0 && hour < 5) {
+      this.stats.nightReviews++;
+    }
+
     this.updateStreak();
     
     if (detail.perfect) {
@@ -338,26 +398,40 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
     }
     
     this.checkAchievements();
-    this._saveStats();
+    this._debouncedSave();
   }
 
   trackAIGenerated(detail = {}) {
     this.stats.aiGeneratedCards++;
     this.stats.totalCardsGenerated++;
+    this._trackCardsToday();
     this.checkAchievements();
-    this._saveStats();
+    this._debouncedSave();
   }
 
   trackTrainerSession(detail = {}) {
     this.stats.trainerSessions++;
     this.checkAchievements();
-    this._saveStats();
+    this._debouncedSave();
   }
 
   trackGraphView() {
     this.stats.graphViews++;
     this.checkAchievements();
-    this._saveStats();
+    this._debouncedSave();
+  }
+
+  // 追踪当日闪卡生成数
+  _trackCardsToday() {
+    const today = new Date().toDateString();
+    if (this.stats.todayDate !== today) {
+      this.stats.todayDate = today;
+      this.stats.cardsToday = 0;
+    }
+    this.stats.cardsToday++;
+    if (this.stats.cardsToday > this.stats.maxCardsInDay) {
+      this.stats.maxCardsInDay = this.stats.cardsToday;
+    }
   }
 
   updateStreak() {
@@ -374,6 +448,14 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
       this.stats.currentStreak++;
       this.showEncouragement("streak");
     } else {
+      // 检测中断后回归
+      if (this.stats.lastReviewDate) {
+        const lastDate = new Date(this.stats.lastReviewDate);
+        const diffDays = Math.floor((new Date(today) - lastDate) / (1000 * 60 * 60 * 24));
+        if (diffDays > 7) {
+          this.stats.comebacks++;
+        }
+      }
       this.stats.currentStreak = 1;
     }
 
@@ -385,7 +467,8 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
   // ==================== 成就检测 ====================
   checkAchievements() {
     Object.values(ACHIEVEMENTS).forEach((achievement) => {
-      if (!this.unlockedAchievements.has(achievement.id) && achievement.condition(this.stats)) {
+      if (this.unlockedAchievements.has(achievement.id)) return; // 跳过已解锁
+      if (achievement.condition(this.stats)) {
         this.unlockAchievement(achievement);
       }
     });
@@ -400,6 +483,7 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
     this.showAchievementPopup(achievement);
     this.showEncouragement("achievement_unlocked");
 
+    // 成就解锁是重要事件，立即保存
     this._saveStats();
   }
 
@@ -417,11 +501,35 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
     `;
     document.body.appendChild(overlay);
 
+    // 撒彩纸效果
+    this._spawnConfetti();
+
     // 点击可提前关闭
     overlay.addEventListener("click", () => this._removeOverlay(overlay));
 
     // 3秒后淡出并移除
     setTimeout(() => this._removeOverlay(overlay), 3000);
+  }
+
+  // 彩纸粒子效果
+  _spawnConfetti() {
+    const colors = ["#667eea", "#764ba2", "#f093fb", "#f5576c", "#4facfe", "#43e97b", "#fa709a", "#fee140"];
+    for (let i = 0; i < 20; i++) {
+      const particle = document.createElement("div");
+      particle.className = "confetti-particle";
+      particle.style.left = Math.random() * 100 + "vw";
+      particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+      particle.style.animationDelay = Math.random() * 0.5 + "s";
+      particle.style.animationDuration = (1.5 + Math.random() * 1) + "s";
+      particle.style.width = (6 + Math.random() * 8) + "px";
+      particle.style.height = (6 + Math.random() * 8) + "px";
+      particle.style.borderRadius = Math.random() > 0.5 ? "50%" : "2px";
+      document.body.appendChild(particle);
+      // 动画结束后移除
+      particle.addEventListener("animationend", () => {
+        if (particle.parentNode) particle.parentNode.removeChild(particle);
+      });
+    }
   }
 
   _removeOverlay(overlay) {
@@ -487,6 +595,64 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
     return "继续加油！你做得很棒！";
   }
 
+  // ==================== 数据导出/导入 ====================
+  _exportData() {
+    try {
+      const data = {
+        stats: this.stats,
+        unlockedAchievements: Array.from(this.unlockedAchievements),
+        exportDate: new Date().toISOString(),
+      };
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `flashcard-achievements-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showMessage("成就数据已导出！", 3000);
+    } catch (e) {
+      console.error("导出数据失败:", e);
+      showMessage("导出数据失败！", 3000);
+    }
+  }
+
+  _importData() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.style.display = "none";
+    document.body.appendChild(input);
+
+    input.addEventListener("change", async (e) => {
+      try {
+        const file = e.target.files[0];
+        if (!file) return;
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        if (data.stats && Array.isArray(data.unlockedAchievements)) {
+          this.stats = { ...this.stats, ...data.stats };
+          this.unlockedAchievements = new Set(data.unlockedAchievements);
+          await this._saveStats();
+          showMessage("成就数据已导入！", 3000);
+        } else {
+          showMessage("无效的数据格式！", 3000);
+        }
+      } catch (e) {
+        console.error("导入数据失败:", e);
+        showMessage("导入数据失败！请检查文件格式。", 3000);
+      } finally {
+        document.body.removeChild(input);
+      }
+    });
+
+    input.click();
+  }
+
   // ==================== UI 渲染 ====================
   renderDock() {
     const progress = this.getLevelProgress();
@@ -545,6 +711,12 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
             ${Object.values(ACHIEVEMENTS).map(a => this.renderAchievementBadge(a)).join("")}
           </div>
         </div>
+
+        <!-- 数据导出/导入 -->
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="b3-button b3-button--outline" data-action="export" style="flex:1;font-size:12px;">📤 导出数据</button>
+          <button class="b3-button b3-button--outline" data-action="import" style="flex:1;font-size:12px;">📥 导入数据</button>
+        </div>
       </div>
     `;
   }
@@ -561,14 +733,18 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
 
   renderAchievementBadge(achievement) {
     const unlocked = this.unlockedAchievements.has(achievement.id);
+    const isHidden = achievement.hidden && !unlocked;
+    const displayIcon = isHidden ? "❓" : achievement.icon;
+    const displayName = isHidden ? "???" : achievement.name;
+    const displayTitle = isHidden ? "隐藏成就：继续努力来解锁！" : `${achievement.name}: ${achievement.description} (+${achievement.xp} XP)`;
     return `
       <div 
         class="badge-hover"
         style="padding:8px;text-align:center;border-radius:8px;cursor:pointer;${unlocked ? 'background:var(--b3-theme-primary-light);' : 'background:var(--b3-theme-surface);opacity:0.5;'}"
-        title="${achievement.name}: ${achievement.description} (+${achievement.xp} XP)"
+        title="${displayTitle}"
       >
-        <div style="font-size:24px;">${achievement.icon}</div>
-        <div style="font-size:10px;margin-top:2px;${unlocked ? '' : 'filter:grayscale(1);'}">${achievement.name}</div>
+        <div style="font-size:24px;">${displayIcon}</div>
+        <div style="font-size:10px;margin-top:2px;${unlocked ? '' : 'filter:grayscale(1);'}">${displayName}</div>
       </div>
     `;
   }
@@ -596,6 +772,18 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
         }
       });
     });
+
+    // 导出按钮
+    const exportBtn = element.querySelector('[data-action="export"]');
+    if (exportBtn) {
+      exportBtn.addEventListener("click", () => this._exportData());
+    }
+
+    // 导入按钮
+    const importBtn = element.querySelector('[data-action="import"]');
+    if (importBtn) {
+      importBtn.addEventListener("click", () => this._importData());
+    }
   }
 
   openDock() {

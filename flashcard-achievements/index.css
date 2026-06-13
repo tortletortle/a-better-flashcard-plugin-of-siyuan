@@ -134,3 +134,18 @@
   opacity: 0.6;
   filter: blur(4px);
 }
+
+/* 彩纸粒子动画 */
+@keyframes confetti-fall {
+  0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.confetti-particle {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  z-index: 100000;
+  animation: confetti-fall 2s ease-in forwards;
+  pointer-events: none;
+}
