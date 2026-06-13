@@ -186,8 +186,90 @@ if (PluginClass) {
   assertEqual(cards[0].front, "Q", "this.parse front correct");
 }
 
+// ── 测试 4: trainer 薄代理方法存在 ─────────────────
+console.log("\nTest 4: Trainer thin wrapper methods exist...");
+if (PluginClass) {
+  const p = new PluginClass({});
+  const trainerMethods = [
+    "defaultTrainerState", "normalizeTrainerState", "trainer",
+    "trainerDebug", "trainerAnalyze", "trainerGenerateCards",
+    "trainerBuildPrompt", "trainerBuildRefinePrompt", "trainerBuildClassifyPrompt",
+    "trainerExtractJsonCandidate", "trainerParseAIContent", "trainerFirstText",
+    "trainerNormalizeAICard", "trainerAIShape", "trainerNormalizeAnalysis",
+    "trainerNormalizeClassification", "trainerDiagnoseAIError",
+    "normalizeTrainerAcceptedCard", "trainerCreateAcceptedCard",
+    "trainerApplyClassification", "trainerNormalizeActiveDraftIndex",
+    "trainerFocusDraftAfterRemoval",
+  ];
+  for (const m of trainerMethods) {
+    assert(typeof p[m] === "function", `trainer method: ${m}`);
+  }
+}
+
+// ── 测试 5: trainer 薄代理正确转发 ─────────────────
+console.log("\nTest 5: Trainer thin wrappers delegate correctly...");
+if (PluginClass) {
+  const p = new PluginClass({});
+
+  // defaultTrainerState
+  const def = p.defaultTrainerState();
+  assertEqual(def.topic, "斜面上物体的受力分析", "this.defaultTrainerState → tl");
+
+  // normalizeTrainerState
+  const norm = p.normalizeTrainerState(null);
+  assertEqual(norm.topic, def.topic, "this.normalizeTrainerState → tl");
+
+  // trainerAnalyze
+  const an = p.trainerAnalyze("斜面", "日常理解");
+  assertEqual(an.topic, "斜面", "this.trainerAnalyze → tl");
+  assert(an.cards.length > 0, "preset cards exist");
+
+  // trainerGenerateCards
+  const gen = p.trainerGenerateCards({ cards: [] }, "理解", "日常理解");
+  assertEqual(gen.length, 0, "this.trainerGenerateCards empty");
+
+  // trainerBuildPrompt
+  const bp = p.trainerBuildPrompt("导数", "日常理解");
+  assert(bp.includes("导数"), "this.trainerBuildPrompt → tl");
+
+  // trainerBuildClassifyPrompt
+  const bcp = p.trainerBuildClassifyPrompt({ front: "Q" });
+  assert(bcp.includes("分类器"), "this.trainerBuildClassifyPrompt → tl");
+
+  // trainerExtractJsonCandidate
+  assertEqual(p.trainerExtractJsonCandidate('{"a":1}'), '{"a":1}', "this.trainerExtractJsonCandidate → tl");
+
+  // trainerParseAIContent
+  const pa = p.trainerParseAIContent('{"topic":"test"}');
+  assertEqual(pa.topic, "test", "this.trainerParseAIContent → tl");
+
+  // trainerFirstText
+  assertEqual(p.trainerFirstText({ front: "X" }, ["front"]), "X", "this.trainerFirstText → tl");
+
+  // trainerNormalizeAICard
+  const nc = p.trainerNormalizeAICard({ front: "Q", back: "A" });
+  assertEqual(nc.front, "Q", "this.trainerNormalizeAICard → tl");
+
+  // trainerAIShape
+  const sh = p.trainerAIShape({}, []);
+  assertEqual(sh.valueType, "object", "this.trainerAIShape → tl");
+
+  // trainerNormalizeClassification
+  const ncl = p.trainerNormalizeClassification({}, { cardType: "概念卡" });
+  assertEqual(ncl.cardType, "概念卡", "this.trainerNormalizeClassification → tl");
+
+  // trainerDiagnoseAIError
+  const de = p.trainerDiagnoseAIError(new Error("401 Unauthorized"));
+  assert(de.includes("API Key"), "this.trainerDiagnoseAIError → tl");
+
+  // trainerApplyClassification
+  const testCard = { front: "Q", topic: "T", cardType: "概念卡" };
+  p.trainerApplyClassification(testCard, { subject: "数学" }, "ai");
+  assertEqual(testCard.classifiedBy, "ai", "this.trainerApplyClassification → tl");
+}
+
 // ── 测试 4: 非提取方法仍然存在 ──────────────────────
-console.log("\nTest 4: Non-extracted methods still exist...");
+console.log("\nTest 6: Non-extracted methods still exist...");
 if (PluginClass) {
   const p = new PluginClass({});
   const preservedMethods = [
