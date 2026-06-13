@@ -1,0 +1,27 @@
+{
+  "name": "ai-flashcards-native",
+  "version": "0.1.0",
+  "description": "AI-powered flashcard plugin for SiYuan Notes",
+  "author": "tortletortle",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint index.js",
+    "format": "prettier --write .",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": [
+    "flashcard",
+    "ai",
+    "siyuan",
+    "spaced-repetition",
+    "anki"
+  ],
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

@@ -1,7 +1,7 @@
 {
   "name": "ai-flashcards-native",
   "author": "tortl",
-  "url": "",
+  "url": "https://github.com/tortletortle/a-better-flashcard-plugin-of-siyuan",
   "version": "0.1.0",
   "minAppVersion": "3.6.4",
   "backends": ["all"],
@@ -20,7 +20,9 @@
     "zh_CN": "README_zh_CN.md"
   },
   "funding": {
-    "custom": []
+    "custom": [
+      "https://www.buymeacoffee.com/tortletortle"
+    ]
   },
   "keywords": [
     "flashcard",

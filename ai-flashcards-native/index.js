@@ -7,6 +7,30 @@ const {
   Constants,
 } = require("siyuan");
 
+const {
+  esc,
+  day,
+  uid,
+  firstDefined,
+  numberFromApi: _numberFromApi,
+  parseTime,
+  dueText: _dueText,
+  cardMastery: _cardMastery,
+  masteryScore: _masteryScore,
+  masteryLabel: _masteryLabel,
+  cleanBlockMarkdown: _cleanBlockMarkdown,
+  cleanFileName: _cleanFileName,
+  safeMd: _safeMd,
+  extractID: _extractID,
+  mdHTML: _mdHTML,
+  repairMathSegment,
+  repairPlainText,
+  repairFormulaText: _repairFormulaText,
+  normalizeCardText: _normalizeCardText,
+  clean: _clean,
+  parse: _parse,
+} = require("./src/utils");
+
 const KEY = "flashcard-state";
 const DOCK = "ai_flashcards_native_dock";
 const TAB_TYPE = "ai_flashcards_native_tab";
@@ -422,17 +446,9 @@ module.exports = class AIFlashcardsNativePlugin extends Plugin {
     return response.data;
   }
 
-  firstDefined(...values) {
-    return values.find(
-      (value) => value !== undefined && value !== null && value !== "",
-    );
-  }
+  firstDefined(...values) { return firstDefined(...values); }
 
-  numberFromApi(...values) {
-    const value = this.firstDefined(...values);
-    const number = Number(value);
-    return Number.isFinite(number) ? number : 0;
-  }
+  numberFromApi(...values) { return _numberFromApi(...values); }
 
   riffDeckID(deck) {
     return String(
@@ -841,24 +857,7 @@ module.exports = class AIFlashcardsNativePlugin extends Plugin {
     }));
   }
 
-  mdHTML(markdown) {
-    const text = String(markdown || "").trim();
-    if (!text) {
-      return "";
-    }
-    try {
-      const lute = window.Lute?.New?.() || window.Lute;
-      if (typeof lute?.Md2HTML === "function") {
-        return lute.Md2HTML(text);
-      }
-      if (typeof lute?.Md2BlockDOM === "function") {
-        return lute.Md2BlockDOM(text);
-      }
-    } catch (e) {
-      console.warn("render markdown with Lute failed", e);
-    }
-    return `<p>${this.esc(text).replace(/\n/g, "<br>")}</p>`;
-  }
+  mdHTML(markdown) { return _mdHTML(markdown); }
 
   cardContentHTML(card) {
     if (card.nativeHTML) {
@@ -873,26 +872,11 @@ module.exports = class AIFlashcardsNativePlugin extends Plugin {
       </div>`;
   }
 
-  day() {
-    return new Date().toISOString().slice(0, 10);
-  }
+  day() { return day(); }
 
-  uid() {
-    return Date.now() + "_" + Math.random().toString(16).slice(2);
-  }
+  uid() { return uid(); }
 
-  esc(s) {
-    return String(s).replace(
-      /[&<>"]/g,
-      (c) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-        })[c],
-    );
-  }
+  esc(s) { return esc(s); }
 
   fixDay() {
     this.state = this.normalize(this.state);
@@ -1064,12 +1048,7 @@ module.exports = class AIFlashcardsNativePlugin extends Plugin {
     return [...ids];
   }
 
-  cleanBlockMarkdown(markdown) {
-    return String(markdown || "")
-      .replace(/\n?\{:\s+[^}]*id="[^"]+"[^}]*\}/g, "")
-      .replace(/\n?\{:\s+[^}]*custom-riff-decks="[^"]+"[^}]*\}/g, "")
-      .trim();
-  }
+  cleanBlockMarkdown(markdown) { return _cleanBlockMarkdown(markdown); }
 
   async blockMarkdown(id) {
     const data = await this.api("/api/block/getBlockKramdown", {
@@ -1200,86 +1179,15 @@ module.exports = class AIFlashcardsNativePlugin extends Plugin {
     return this.state.cards.filter((card) => card.packId === packId);
   }
 
-  dueText(card) {
-    const dueAt = card.dueAt || Date.now();
-    const diff = dueAt - Date.now();
-    if (diff <= 0) {
-      return "现在";
-    }
-    const minutes = Math.ceil(diff / 6e4);
-    if (minutes < 60) {
-      return `${minutes} 分钟后`;
-    }
-    const hours = Math.ceil(minutes / 60);
-    if (hours < 24) {
-      return `${hours} 小时后`;
-    }
-    return `${Math.ceil(hours / 24)} 天后`;
-  }
+  dueText(card) { return _dueText(card); }
 
-  parseTime(value) {
-    if (!value) {
-      return 0;
-    }
-    if (typeof value === "number") {
-      return value > 1e12 ? value : value * 1000;
-    }
-    const text = String(value).trim();
-    if (/^\d{14}$/.test(text)) {
-      const year = Number(text.slice(0, 4));
-      const month = Number(text.slice(4, 6)) - 1;
-      const day = Number(text.slice(6, 8));
-      const hour = Number(text.slice(8, 10));
-      const minute = Number(text.slice(10, 12));
-      const second = Number(text.slice(12, 14));
-      return new Date(year, month, day, hour, minute, second).getTime();
-    }
-    const parsed = Date.parse(text);
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
+  parseTime(value) { return parseTime(value); }
 
-  cardMastery(card = {}) {
-    const now = Date.now();
-    const state = String(card.state ?? card.riffCard?.state ?? "");
-    const dueAt = this.parseTime(
-      card.due ||
-        card.dueTime ||
-        card.dueAt ||
-        card.riffCard?.due ||
-        card.riffCard?.dueTime,
-    );
-    const reps = Number(card.reps ?? card.riffCard?.reps ?? 0);
-    const lapses = Number(card.lapses ?? card.riffCard?.lapses ?? 0);
-    if (
-      lapses > 0 ||
-      (dueAt && dueAt < now - 864e5) ||
-      ["1", "again", "forgot"].includes(state)
-    ) {
-      return "weak";
-    }
-    if (!dueAt && !reps && !state) {
-      return "unknown";
-    }
-    if (
-      (dueAt && dueAt <= now + 2 * 864e5) ||
-      reps < 2 ||
-      ["2", "hard", "new"].includes(state)
-    ) {
-      return "mid";
-    }
-    return "good";
-  }
+  cardMastery(card = {}) { return _cardMastery(card); }
 
-  masteryScore(level) {
-    return { weak: 0, mid: 1, unknown: 1, good: 2 }[level] ?? 1;
-  }
+  masteryScore(level) { return _masteryScore(level); }
 
-  masteryLabel(level) {
-    return (
-      { weak: "薄弱", mid: "中间", good: "熟悉", unknown: "未知" }[level] ||
-      "未知"
-    );
-  }
+  masteryLabel(level) { return _masteryLabel(level); }
 
   conceptFromCard(card = {}) {
     const meta = card.blockID ? this.state.graphMeta?.[card.blockID] : null;
@@ -1508,16 +1416,11 @@ module.exports = class AIFlashcardsNativePlugin extends Plugin {
 
   newBlockID() {
     return (
-      window.Lute?.NewNodeID?.() || this.uid().replace(/_/g, "-").slice(0, 22)
+      window.Lute?.NewNodeID?.() || uid().replace(/_/g, "-").slice(0, 22)
     );
   }
 
-  safeMd(text) {
-    return String(text || "")
-      .replace(/^(\s*){{{/gm, "$1&#123;&#123;&#123;")
-      .replace(/^(\s*)}}}/gm, "$1&#125;&#125;&#125;")
-      .trim();
-  }
+  safeMd(text) { return _safeMd(text); }
 
   nativeCardMarkdown(front, back, blockID) {
     const questionID = this.newBlockID();
@@ -1532,30 +1435,7 @@ ${this.safeMd(back)}
 {: id="${blockID}" custom-ai-flashcard-native="1"}`;
   }
 
-  extractID(data) {
-    if (!data) {
-      return "";
-    }
-    if (typeof data === "string") {
-      return data;
-    }
-    if (Array.isArray(data)) {
-      for (const item of data) {
-        const id = this.extractID(item);
-        if (id) {
-          return id;
-        }
-      }
-      return "";
-    }
-    return (
-      data.id ||
-      data.blockID ||
-      this.extractID(data.doOperations) ||
-      this.extractID(data.data) ||
-      ""
-    );
-  }
+  extractID(data) { return _extractID(data); }
 
   async ensureStorageDoc() {
     return this.ensureDeckStorageDoc(this.state.activePackId);
@@ -1594,15 +1474,7 @@ ${this.safeMd(back)}
     return docID;
   }
 
-  cleanFileName(name) {
-    return (
-      String(name || "未命名")
-        .replace(/[\\/:*?"<>|#\[\]]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, 48) || "未命名"
-    );
-  }
+  cleanFileName(name) { return _cleanFileName(name); }
 
   async appendNativeCardBlock(front, back, deckID = this.state.activePackId) {
     const blockID = this.newBlockID();
@@ -4911,89 +4783,15 @@ back=${this.clean(card.back || "").slice(0, 220)}`,
     return options;
   }
 
-  normalizeCardText(text) {
-    return this.repairFormulaText(text).trim();
-  }
+  normalizeCardText(text) { return _normalizeCardText(text); }
 
-  // 公式内部：只还原被错误转义的 $，其余 LaTeX 命令一律保留
-  repairMathSegment(math) {
-    return String(math || "")
-      .replace(/\\\$/g, "$")
-      .trim();
-  }
+  repairMathSegment(math) { return repairMathSegment(math); }
 
-  // 公式外的普通文本段：才做 markdown 反转义
-  repairPlainText(text) {
-    return String(text || "")
-      .replace(/\\\$/g, "$")
-      .replace(/\\_/g, "_")
-      .replace(/\\\*/g, "*")
-      .replace(/\\`/g, "`")
-      .replace(/\\\{/g, "{")
-      .replace(/\\\}/g, "}")
-      .replace(/\\\^/g, "^");
-  }
+  repairPlainText(text) { return repairPlainText(text); }
 
-  repairFormulaText(text) {
-    let s = String(text || "").replace(/\r\n/g, "\n");
+  repairFormulaText(text) { return _repairFormulaText(text); }
 
-    // 第 1 步：定界符归一化，容错 AI 多写一层反斜杠
-    // \[ ... \] 或 \\[ ... \\]  →  $$ ... $$
-    s = s.replace(/\\{1,2}\[([\s\S]*?)\\{1,2}\]/g, (_, m) => `$$${m}$$`);
-    // \( ... \) 或 \\( ... \\)  →  $ ... $
-    s = s.replace(/\\{1,2}\(([\s\S]*?)\\{1,2}\)/g, (_, m) => `$${m}$`);
-
-    // 第 2 步：兜底包裹漏了定界符的块级环境
-    s = s.replace(
-      /(^|[^$])(\\begin\{[a-zA-Z*]+\}[\s\S]*?\\end\{[a-zA-Z*]+\})(?!\$)/g,
-      (match, pre, env) => `${pre}$$${env}$$`,
-    );
-
-    // 第 3 步：按 $$ 切块级公式段
-    const out = [];
-    let lastIndex = 0;
-    const blockRe = /\$\$([\s\S]*?)\$\$/g;
-    let bm;
-    while ((bm = blockRe.exec(s)) !== null) {
-      out.push({ type: "text", value: s.slice(lastIndex, bm.index) });
-      out.push({ type: "block", value: bm[1] });
-      lastIndex = blockRe.lastIndex;
-    }
-    out.push({ type: "text", value: s.slice(lastIndex) });
-
-    // 第 4 步：文本段内再切行内 $...$，公式段原样保留
-    const render = [];
-    for (const seg of out) {
-      if (seg.type === "block") {
-        render.push(`$$\n${this.repairMathSegment(seg.value)}\n$$`);
-        continue;
-      }
-      let txt = seg.value;
-      let inlineLast = 0;
-      const inlineRe = /\$([^$\n]+?)\$/g;
-      let im;
-      let buf = "";
-      while ((im = inlineRe.exec(txt)) !== null) {
-        buf += this.repairPlainText(txt.slice(inlineLast, im.index));
-        buf += `$${this.repairMathSegment(im[1])}$`;
-        inlineLast = inlineRe.lastIndex;
-      }
-      buf += this.repairPlainText(txt.slice(inlineLast));
-      render.push(buf);
-    }
-
-    return render.join("").trim();
-  }
-
-  clean(text) {
-    return this.normalizeCardText(text)
-      .replace(/^#{1,6}\s+/gm, "")
-      .replace(/^\s{0,3}>\s?/gm, "")
-      .replace(/^\s*[-+]\s+/gm, "")
-      .replace(/^```[a-zA-Z0-9_-]*\n?/gm, "")
-      .replace(/```$/gm, "")
-      .trim();
-  }
+  clean(text) { return _clean(text); }
 
   offline(text, count, level, style = "knowledge") {
     if (count === "outline") {
@@ -5076,28 +4874,7 @@ ${text}`;
 ${text}`;
   }
 
-  parse(data) {
-    const content =
-      data?.choices?.[0]?.message?.content ??
-      data?.text ??
-      data?.content ??
-      data?.result ??
-      data?.output ??
-      data;
-    const raw =
-      typeof content === "string"
-        ? content.replace(/```json|```/g, "").trim()
-        : JSON.stringify(content);
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed)
-      ? parsed
-          .filter((item) => item.front && item.back)
-          .map((item) => ({
-            front: this.normalizeCardText(item.front),
-            back: this.normalizeCardText(item.back),
-          }))
-      : [];
-  }
+  parse(data) { return _parse(data); }
 
   async ai(text, count, level, style = "knowledge") {
     if (count === "outline") {
