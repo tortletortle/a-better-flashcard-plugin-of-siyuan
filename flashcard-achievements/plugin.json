@@ -1,0 +1,21 @@
+{
+  "name": "flashcard-achievements",
+  "author": "tortl",
+  "url": "https://github.com/tortletortle/a-better-flashcard-plugin-of-siyuan",
+  "version": "0.1.0",
+  "minAppVersion": "3.0.0",
+  "displayName": {
+    "en-US": "Flashcard Achievements",
+    "zh-CN": "闪卡成就系统"
+  },
+  "description": {
+    "en-US": "Gamification system for AI Flashcards - track behavior, AI encouragement, achievements & badges",
+    "zh-CN": "AI闪卡游戏化系统 - 行为追踪、AI鼓励、成就徽章，独立外挂不干扰主程序"
+  },
+  "readme": {
+    "en-US": "README.md",
+    "zh-CN": "README_zh_CN.md"
+  },
+  "funding": [],
+  "keywords": ["flashcard", "achievement", "gamification", "ai", "badge", "siyuan"]
+}

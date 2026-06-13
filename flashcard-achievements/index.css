@@ -1,0 +1,58 @@
+/* 成就系统插件样式 */
+
+/* 成就解锁动画 */
+@keyframes achievement-pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes achievement-glow {
+  0%, 100% { box-shadow: 0 0 5px var(--b3-theme-primary); }
+  50% { box-shadow: 0 0 20px var(--b3-theme-primary), 0 0 30px var(--b3-theme-primary-light); }
+}
+
+.achievement-unlocked {
+  animation: achievement-pop 0.5s ease-out, achievement-glow 2s ease-in-out;
+}
+
+/* XP 进度条动画 */
+@keyframes xp-fill {
+  from { width: 0; }
+}
+
+.xp-bar-animate {
+  animation: xp-fill 0.5s ease-out;
+}
+
+/* 鼓励消息浮动 */
+@keyframes float-up {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.encouragement-msg {
+  animation: float-up 0.3s ease-out;
+}
+
+/* 徽章悬停效果 */
+.badge-hover:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* 等级徽章发光 */
+.level-badge {
+  position: relative;
+}
+
+.level-badge::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+  z-index: -1;
+  opacity: 0.6;
+  filter: blur(4px);
+}
