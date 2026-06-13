@@ -260,6 +260,16 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
       stats: this.stats,
       unlockedAchievements: Array.from(this.unlockedAchievements),
     });
+    this._refreshDock();
+  }
+
+  _refreshDock() {
+    const dockEl = document.querySelector(`[data-type="${DOCK_TYPE}"] .fn__flex-column`);
+    if (dockEl) {
+      const parent = dockEl.parentNode;
+      parent.innerHTML = this.renderDock();
+      this.bindDockEvents(parent);
+    }
   }
 
   // ==================== 事件监听 ====================
@@ -385,12 +395,41 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
     this.unlockedAchievements.add(achievement.id);
     this.stats.totalXP += achievement.xp;
     this.updateLevel();
-    
-    // 弹出成就解锁通知
-    showMessage(`🏆 成就解锁：${achievement.icon} ${achievement.name}！获得 ${achievement.xp} XP`, 5000);
+
+    // 显示成就解锁弹窗动画
+    this.showAchievementPopup(achievement);
     this.showEncouragement("achievement_unlocked");
-    
+
     this._saveStats();
+  }
+
+  showAchievementPopup(achievement) {
+    const overlay = document.createElement("div");
+    overlay.className = "achievement-overlay";
+    overlay.innerHTML = `
+      <div class="achievement-card">
+        <div class="icon">${achievement.icon}</div>
+        <div style="font-size:13px;font-weight:600;color:#667eea;letter-spacing:1px;margin-bottom:8px;">成就解锁！</div>
+        <div class="name">${achievement.name}</div>
+        <div class="desc">${achievement.description}</div>
+        <div class="xp">+${achievement.xp} XP</div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // 点击可提前关闭
+    overlay.addEventListener("click", () => this._removeOverlay(overlay));
+
+    // 3秒后淡出并移除
+    setTimeout(() => this._removeOverlay(overlay), 3000);
+  }
+
+  _removeOverlay(overlay) {
+    if (!overlay.parentNode) return;
+    overlay.classList.add("fade-out");
+    setTimeout(() => {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }, 500);
   }
 
   updateLevel() {
@@ -410,20 +449,34 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
   showEncouragement(type) {
     const templates = ENCOURAGEMENT_TEMPLATES[type] || ENCOURAGEMENT_TEMPLATES.review_complete;
     const message = templates[Math.floor(Math.random() * templates.length)];
-    
+
     this.recentEncouragements.unshift({
       message,
       time: new Date().toLocaleTimeString(),
       type,
     });
-    
+
     // 只保留最近10条
     if (this.recentEncouragements.length > 10) {
       this.recentEncouragements.pop();
     }
-    
-    // 显示消息
-    showMessage(message, 3000);
+
+    // 显示浮动通知
+    this._showEncouragementFloat(message);
+  }
+
+  _showEncouragementFloat(message) {
+    const el = document.createElement("div");
+    el.className = "encouragement-float encouragement-msg";
+    el.textContent = message;
+    document.body.appendChild(el);
+
+    setTimeout(() => {
+      el.classList.add("fade-out");
+      setTimeout(() => {
+        if (el.parentNode) el.parentNode.removeChild(el);
+      }, 500);
+    }, 2500);
   }
 
   // ==================== AI 智能鼓励生成 ====================
@@ -454,7 +507,7 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
             </div>
           </div>
           <div style="height:8px;background:var(--b3-theme-surface);border-radius:4px;overflow:hidden;">
-            <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,#667eea,#764ba2);transition:width .3s;"></div>
+            <div class="xp-bar-animate" style="height:100%;width:${progress}%;background:linear-gradient(90deg,#667eea,#764ba2);transition:width .3s;"></div>
           </div>
           <div style="font-size:12px;color:var(--b3-theme-on-surface-light);margin-top:4px;text-align:right;">
             升级还需 ${(() => { let a = 0; for (let i = 1; i < this.stats.level; i++) a += 100 * i; return a + 100 * this.stats.level - this.stats.totalXP; })()} XP
@@ -510,7 +563,8 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
     const unlocked = this.unlockedAchievements.has(achievement.id);
     return `
       <div 
-        style="padding:8px;text-align:center;border-radius:8px;${unlocked ? 'background:var(--b3-theme-primary-light);' : 'background:var(--b3-theme-surface);opacity:0.5;'}"
+        class="badge-hover"
+        style="padding:8px;text-align:center;border-radius:8px;cursor:pointer;${unlocked ? 'background:var(--b3-theme-primary-light);' : 'background:var(--b3-theme-surface);opacity:0.5;'}"
         title="${achievement.name}: ${achievement.description} (+${achievement.xp} XP)"
       >
         <div style="font-size:24px;">${achievement.icon}</div>

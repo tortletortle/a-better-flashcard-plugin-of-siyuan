@@ -41,6 +41,84 @@
   transition: transform 0.2s ease;
 }
 
+/* 成就解锁弹窗 */
+.achievement-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.5);
+  animation: fade-in 0.3s ease;
+}
+
+.achievement-overlay.fade-out {
+  animation: fade-out 0.5s ease forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.achievement-card {
+  background: var(--b3-theme-background, #fff);
+  border-radius: 16px;
+  padding: 32px 48px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: achievement-pop 0.5s ease-out, achievement-glow 2s ease-in-out infinite;
+}
+
+.achievement-card .icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.achievement-card .name {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--b3-theme-on-background, #333);
+}
+
+.achievement-card .desc {
+  font-size: 14px;
+  color: var(--b3-theme-on-surface-light, #666);
+  margin-bottom: 12px;
+}
+
+.achievement-card .xp {
+  font-size: 18px;
+  font-weight: 600;
+  color: #667eea;
+}
+
+/* 浮动鼓励通知 */
+.encouragement-float {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  z-index: 99998;
+  padding: 12px 20px;
+  background: var(--b3-theme-background, #fff);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  font-size: 14px;
+  max-width: 300px;
+  animation: float-up 0.3s ease-out;
+}
+
+.encouragement-float.fade-out {
+  animation: fade-out 0.5s ease forwards;
+}
+
 /* 等级徽章发光 */
 .level-badge {
   position: relative;
