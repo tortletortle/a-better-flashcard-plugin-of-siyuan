@@ -1,0 +1,28 @@
+{
+  "name": "science-trainer-plugin",
+  "author": "local-demo",
+  "url": "",
+  "version": "0.2.0",
+  "minAppVersion": "3.0.0",
+  "backends": ["windows", "linux", "darwin"],
+  "frontends": ["desktop", "browser-desktop", "mobile", "browser-mobile"],
+  "displayName": {
+    "default": "理科训练舱（兼容入口）",
+    "zh_CN": "理科训练舱（兼容入口）"
+  },
+  "description": {
+    "default": "Compatibility redirect shell for the trainer moved into ai-flashcards-native.",
+    "zh_CN": "已迁移到 ai-flashcards-native 的训练舱兼容跳转入口。"
+  },
+  "readme": {
+    "default": "README.md",
+    "zh_CN": "README.md"
+  },
+  "funding": {
+    "openCollective": "",
+    "patreon": "",
+    "github": "",
+    "custom": [""]
+  },
+  "keywords": ["flashcard", "science", "ai", "compat", "redirect"]
+}

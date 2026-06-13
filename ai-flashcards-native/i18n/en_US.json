@@ -1,0 +1,7 @@
+{
+  "dockTitle": "AI Flashcards",
+  "addTopBarIcon": "Open AI Flashcards",
+  "helloPlugin": "AI Flashcards Native loaded",
+  "openedInDock": "AI Flashcards opened in the right dock",
+  "dockNotFound": "AI Flashcards dock was not found. Make sure the plugin is enabled and the right dock is visible"
+}
