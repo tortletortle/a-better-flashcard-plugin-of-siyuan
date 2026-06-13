@@ -394,16 +394,15 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
   }
 
   updateLevel() {
-    // 等级公式：每级需要 100 * level XP
+    // 等级公式：每级需要 100 * level XP（累加制）
+    // Lv.1: 0~99, Lv.2: 100~299(需200), Lv.3: 300~599(需300)
     const xp = this.stats.totalXP;
     let level = 1;
-    let required = 100;
-    
-    while (xp >= required) {
+    let accumulated = 0;
+    while (xp >= accumulated + 100 * level) {
+      accumulated += 100 * level;
       level++;
-      required = 100 * level;
     }
-    
     this.stats.level = level;
   }
 
@@ -458,7 +457,7 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
             <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,#667eea,#764ba2);transition:width .3s;"></div>
           </div>
           <div style="font-size:12px;color:var(--b3-theme-on-surface-light);margin-top:4px;text-align:right;">
-            升级还需 ${100 * (this.stats.level + 1) - this.stats.totalXP} XP
+            升级还需 ${(() => { let a = 0; for (let i = 1; i < this.stats.level; i++) a += 100 * i; return a + 100 * this.stats.level - this.stats.totalXP; })()} XP
           </div>
         </div>
 
@@ -521,18 +520,37 @@ module.exports = class FlashcardAchievementsPlugin extends Plugin {
   }
 
   getLevelProgress() {
-    const currentLevelXP = 100 * this.stats.level;
-    const nextLevelXP = 100 * (this.stats.level + 1);
-    const progressInLevel = this.stats.totalXP - currentLevelXP;
-    const needed = nextLevelXP - currentLevelXP;
-    return Math.min(100, Math.max(0, (progressInLevel / needed) * 100));
+    // 计算当前等级的XP起点和下一级的XP要求
+    // Lv.1: 0~99, Lv.2: 100~299(需200), Lv.3: 300~599(需300)
+    let accumulatedXP = 0;
+    for (let i = 1; i < this.stats.level; i++) {
+      accumulatedXP += 100 * i;
+    }
+    const currentLevelRequired = 100 * this.stats.level;
+    const progressInLevel = this.stats.totalXP - accumulatedXP;
+    return Math.min(100, Math.max(0, (progressInLevel / currentLevelRequired) * 100));
   }
 
   bindDockEvents(element) {
-    // 绑定面板事件
+    // 点击成就徽章显示详情
+    const badges = element.querySelectorAll("[title]");
+    badges.forEach(badge => {
+      badge.addEventListener("click", () => {
+        const title = badge.getAttribute("title");
+        if (title) {
+          showMessage(title, 3000);
+        }
+      });
+    });
   }
 
   openDock() {
-    // 打开停靠面板
+    // 通过 SiYuan 内置方法打开 dock 面板
+    const dockElement = document.querySelector(`[data-type="${DOCK_TYPE}"]`);
+    if (dockElement) {
+      dockElement.click();
+    } else {
+      showMessage("请在右下方停靠面板中查看成就系统 🏆", 3000);
+    }
   }
 };
