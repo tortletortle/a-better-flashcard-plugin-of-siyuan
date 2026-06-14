@@ -1,0 +1,39 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2023 SiYuan 思源笔记
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+.plugin-sample__custom-tab{background-color:var(--b3-theme-background);height:100%;width:100%;display:flex;justify-content:center;align-items:center}.plugin-sample__custom-dock{display:flex;justify-content:center;align-items:center}.plugin-sample__time{background:var(--b3-card-info-background);border-radius:4px;padding:2px 8px}
+.aiflash-wrap{height:100%;display:flex;flex-direction:column;padding:12px;gap:12px;background:var(--b3-theme-background)}
+.aiflash-head{display:flex;align-items:center;justify-content:space-between}
+.aiflash-head h3{margin:0;font-size:18px}
+.aiflash-badge{padding:2px 8px;border-radius:999px;background:var(--b3-theme-primary-lightest);color:var(--b3-theme-primary);font-size:12px}
+.aiflash-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.aiflash-tab.active{background:var(--b3-theme-primary);color:var(--b3-theme-on-primary)}
+.aiflash-view{display:none;gap:10px}
+.aiflash-view.active{display:flex;flex-direction:column;flex:1}
+.aiflash-cardbox,.aiflash-result{border:1px solid var(--b3-border-color);border-radius:10px;padding:12px;background:var(--b3-theme-surface)}
+.aiflash-empty{color:var(--b3-theme-on-surface-light)}
+.aiflash-textarea{min-height:160px}
+.aiflash-gap{gap:8px}
+.aiflash-item{padding:10px 0;border-bottom:1px dashed var(--b3-border-color)}
+.aiflash-item:last-child{border-bottom:none}
+.aiflash-item strong{display:block;margin-bottom:6px}
