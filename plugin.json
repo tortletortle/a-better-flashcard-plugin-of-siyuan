@@ -1,51 +1,33 @@
 {
   "name": "plugin-sample",
-  "author": "Vanessa",
-  "url": "https://github.com/siyuan-note/plugin-sample",
-  "version": "0.4.7",
+  "author": "tortl",
+  "url": "https://github.com/tortletortle/a-better-flashcard-plugin-of-siyuan.git",
+  "version": "0.1.1",
   "minAppVersion": "3.6.4",
-  "backends": [
-    "windows",
-    "linux",
-    "darwin",
-    "ios",
-    "android",
-    "harmony",
-    "docker",
-    "all"
-  ],
-  "frontends": [
-    "desktop",
-    "mobile",
-    "browser-desktop",
-    "browser-mobile",
-    "desktop-window",
-    "all"
-  ],
+  "backends": ["all"],
+  "frontends": ["all"],
   "disabledInPublish": false,
   "displayName": {
-    "default": "Plugin Sample",
-    "zh_CN": "插件示例"
+    "default": "AI Flashcards",
+    "zh_CN": "AI 闪卡"
   },
   "description": {
-    "default": "This is a plugin development sample",
-    "zh_CN": "这是一个插件开发示例"
+    "default": "Generate and review flashcards inside SiYuan with AI and spaced repetition.",
+    "zh_CN": "在思源笔记中使用 AI 生成并复习闪卡，支持间隔重复。"
   },
   "readme": {
     "default": "README.md",
     "zh_CN": "README_zh_CN.md"
   },
   "funding": {
-    "openCollective": "",
-    "patreon": "",
-    "github": "",
-    "custom": [
-      "https://ld246.com/sponsor"
-    ]
+    "custom": []
   },
   "keywords": [
-    "开发者参考",
-    "developer reference",
-    "示例插件"
+    "flashcard",
+    "anki",
+    "ai",
+    "spaced repetition",
+    "闪卡",
+    "思源插件"
   ]
 }

@@ -1,65 +1,362 @@
-/*!
- * MIT License
- *
- * Copyright (c) 2023 SiYuan 思源笔记
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */(()=>{"use strict";var s={};s.d=(c,t)=>{for(var e in t)s.o(t,e)&&!s.o(c,e)&&Object.defineProperty(c,e,{enumerable:!0,get:t[e]})},s.o=(c,t)=>Object.prototype.hasOwnProperty.call(c,t),s.r=c=>{typeof Symbol<"u"&&Symbol.toStringTag&&Object.defineProperty(c,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(c,"__esModule",{value:!0})};var r={};s.r(r),s.d(r,{default:()=>m});const o=require("siyuan");var b=(c,t,e)=>new Promise((n,i)=>{var v=a=>{try{h(e.next(a))}catch(p){i(p)}},f=a=>{try{h(e.throw(a))}catch(p){i(p)}},h=a=>a.done?n(a.value):Promise.resolve(a.value).then(v,f);h((e=e.apply(c,t)).next())});const l="menu-config",u="custom_tab",d="dock_tab";class m extends o.Plugin{constructor(){super(...arguments),this.blockIconEventBindThis=this.blockIconEvent.bind(this)}updateProtyleToolbar(t){return t.push("|"),t.push({name:"insert-smail-emoji",icon:"iconEmoji",hotkey:"\u21E7\u2318I",tipPosition:"n",tip:this.i18n.insertEmoji,click(e){e.insert("\u{1F60A}")}}),t}onload(){this.data[l]={readonlyText:"Readonly"};const t=(0,o.getFrontend)();this.isMobile=t==="mobile"||t==="browser-mobile",this.addIcons(`<symbol id="iconFace" viewBox="0 0 32 32">
-<path d="M13.667 17.333c0 0.92-0.747 1.667-1.667 1.667s-1.667-0.747-1.667-1.667 0.747-1.667 1.667-1.667 1.667 0.747 1.667 1.667zM20 15.667c-0.92 0-1.667 0.747-1.667 1.667s0.747 1.667 1.667 1.667 1.667-0.747 1.667-1.667-0.747-1.667-1.667-1.667zM29.333 16c0 7.36-5.973 13.333-13.333 13.333s-13.333-5.973-13.333-13.333 5.973-13.333 13.333-13.333 13.333 5.973 13.333 13.333zM14.213 5.493c1.867 3.093 5.253 5.173 9.12 5.173 0.613 0 1.213-0.067 1.787-0.16-1.867-3.093-5.253-5.173-9.12-5.173-0.613 0-1.213 0.067-1.787 0.16zM5.893 12.627c2.28-1.293 4.040-3.4 4.88-5.92-2.28 1.293-4.040 3.4-4.88 5.92zM26.667 16c0-1.040-0.16-2.040-0.44-2.987-0.933 0.2-1.893 0.32-2.893 0.32-4.173 0-7.893-1.92-10.347-4.92-1.4 3.413-4.187 6.093-7.653 7.4 0.013 0.053 0 0.12 0 0.187 0 5.88 4.787 10.667 10.667 10.667s10.667-4.787 10.667-10.667z"></path>
-</symbol>
-<symbol id="iconSaving" viewBox="0 0 32 32">
-<path d="M20 13.333c0-0.733 0.6-1.333 1.333-1.333s1.333 0.6 1.333 1.333c0 0.733-0.6 1.333-1.333 1.333s-1.333-0.6-1.333-1.333zM10.667 12h6.667v-2.667h-6.667v2.667zM29.333 10v9.293l-3.76 1.253-2.24 7.453h-7.333v-2.667h-2.667v2.667h-7.333c0 0-3.333-11.28-3.333-15.333s3.28-7.333 7.333-7.333h6.667c1.213-1.613 3.147-2.667 5.333-2.667 1.107 0 2 0.893 2 2 0 0.28-0.053 0.533-0.16 0.773-0.187 0.453-0.347 0.973-0.427 1.533l3.027 3.027h2.893zM26.667 12.667h-1.333l-4.667-4.667c0-0.867 0.12-1.72 0.347-2.547-1.293 0.333-2.347 1.293-2.787 2.547h-8.227c-2.573 0-4.667 2.093-4.667 4.667 0 2.507 1.627 8.867 2.68 12.667h2.653v-2.667h8v2.667h2.68l2.067-6.867 3.253-1.093v-4.707z"></path>
-</symbol>`),this.custom=this.addTab({type:u,init(){this.element.innerHTML=`<div class="plugin-sample__custom-tab">${this.data.text}</div>`},beforeDestroy(){console.log("before destroy tab:",u)},destroy(){console.log("destroy tab:",u)}}),this.addCommand({langKey:"showDialog",hotkey:"\u21E7\u2318O",callback:()=>{this.showDialog()}}),this.addCommand({langKey:"getTab",hotkey:"\u21E7\u2318M",globalCallback:()=>{console.log(this.getOpenedTab())}}),this.addDock({config:{position:"LeftBottom",size:{width:200,height:0},icon:"iconSaving",title:"Custom Dock",hotkey:"\u2325\u2318W"},data:{text:"This is my custom dock"},type:d,resize(){console.log(d+" resize")},update(){console.log(d+" update")},init:i=>{this.isMobile?i.element.innerHTML=`<div class="toolbar toolbar--border toolbar--dark">
-    <svg class="toolbar__icon"><use xlink:href="#iconEmoji"></use></svg>
-        <div class="toolbar__text">Custom Dock</div>
-    </div>
-    <div class="fn__flex-1 plugin-sample__custom-dock">
-        ${i.data.text}
-    </div>
-</div>`:i.element.innerHTML=`<div class="fn__flex-1 fn__flex-column">
-    <div class="block__icons">
-        <div class="block__logo">
-            <svg class="block__logoicon"><use xlink:href="#iconEmoji"></use></svg>Custom Dock
+const { Plugin, showMessage, getFrontend } = require("siyuan");
+
+const KEY = "flashcard-state";
+const DOCK = "ai_flashcards_dock";
+
+const SAMPLE = [
+  ["大脑的两种工作模式是什么？", "专注模式和发散模式。学习需要两者交替使用。"],
+  ["什么是组块化？", "把零散知识点练成自动化整体，释放工作记忆。"],
+  ["为什么重复阅读低效？", "它只产生熟悉感，不等于真正记住；主动回忆更有效。"],
+  ["什么是合意困难？", "费力的学习更能强化记忆，太轻松往往无效。"],
+  ["间隔重复为什么好？", "每次间隔后的重新回忆都会强化记忆痕迹。"],
+  ["番茄工作法核心是什么？", "25分钟专注+5分钟休息，降低启动门槛。"],
+  ["什么是刻意练习？", "在能力边缘、针对弱点、有目标、有反馈。"],
+];
+
+module.exports = class AIFlashcardsPlugin extends Plugin {
+  async onload() {
+    this.isMobile = ["mobile", "browser-mobile"].includes(getFrontend());
+    this.state = (await this.loadData(KEY).catch(() => null)) || this.def();
+    this.gen = [];
+    this.q = [];
+    this.cur = null;
+    this.done = 0;
+
+    this.addIcons(`
+      <symbol id="iconFlashcardsAI" viewBox="0 0 32 32">
+        <path d="M6 7a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-5l-4.8 4.2A1 1 0 0 1 11 25.5V22H9a3 3 0 0 1-3-3V7zm6 3h8v2h-8v-2zm0 4h6v2h-6v-2z"></path>
+      </symbol>`);
+
+    this.addTopBar({
+      icon: "iconFlashcardsAI",
+      title: this.i18n.addTopBarIcon,
+      position: "right",
+      callback: () => this.openDock(),
+    });
+
+    this.addDock({
+      config: {
+        position: "RightBottom",
+        size: { width: 450, height: 0 },
+        icon: "iconFlashcardsAI",
+        title: this.i18n.dockTitle,
+      },
+      data: {},
+      type: DOCK,
+      init: (d) => {
+        d.element.innerHTML = this.shell();
+        this.bind(d.element);
+        this.render(d.element);
+      },
+      update: (d) => this.render(d.element),
+      destroy() {},
+    });
+  }
+
+  def() {
+    return {
+      reviewedToday: 0,
+      lastDay: this.day(),
+      settings: { provider: "offline", baseUrl: "", apiKey: "", model: "gpt-4o-mini" },
+      cards: [],
+    };
+  }
+
+  day() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  uid() {
+    return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  }
+
+  esc(s) {
+    return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  }
+
+  fixDay() {
+    if (this.state.lastDay !== this.day()) {
+      this.state.lastDay = this.day();
+      this.state.reviewedToday = 0;
+    }
+  }
+
+  async save() {
+    this.fixDay();
+    await this.saveData(KEY, this.state);
+  }
+
+  openDock() {
+    document.querySelector(`[data-type="${DOCK}"]`)?.click();
+  }
+
+  due() {
+    const n = Date.now();
+    return this.state.cards.filter((c) => (c.dueAt || 0) <= n).sort((a, b) => (a.dueAt || 0) - (b.dueAt || 0));
+  }
+
+  resetQ() {
+    this.q = this.due();
+    this.cur = this.q.shift() || null;
+    this.done = 0;
+  }
+
+  card(f, b) {
+    return { id: this.uid(), front: f, back: b, dueAt: Date.now(), interval: 0, ease: 2.5, reps: 0, lapses: 0 };
+  }
+
+  shell() {
+    return `
+      <div class="aiflash-wrap">
+        <div class="aiflash-head">
+          <h3>${this.i18n.dockTitle}</h3>
+          <span class="aiflash-badge">Pro</span>
         </div>
-        <span class="fn__flex-1 fn__space"></span>
-        <span data-type="min" class="block__icon ariaLabel" data-position="north" aria-label="Min ${(0,o.adaptHotkey)("\u2318W")}"><svg><use xlink:href="#iconMin"></use></svg></span>
-    </div>
-    <div class="fn__flex-1 plugin-sample__custom-dock">
-        ${i.data.text}
-    </div>
-</div>`},destroy(){console.log("destroy dock:",d)}});const e=document.createElement("textarea");this.setting=new o.Setting({confirmCallback:()=>{this.saveData(l,{readonlyText:e.value}).catch(i=>{(0,o.showMessage)(`[${this.name}] save data [${l}] fail: `,i)})}}),this.setting.addItem({title:"Readonly text",direction:"row",description:"Open plugin url in browser",createActionElement:()=>(e.className="b3-text-field fn__block",e.placeholder="Readonly text in the menu",e.value=this.data[l].readonlyText,e)});const n=document.createElement("button");n.className="b3-button b3-button--outline fn__flex-center fn__size200",n.textContent="Open",n.addEventListener("click",()=>{window.open("https://github.com/siyuan-note/plugin-sample")}),this.setting.addItem({title:"Open plugin url",description:"Open plugin url in browser",actionElement:n}),this.protyleSlash=[{filter:["insert emoji \u{1F60A}","\u63D2\u5165\u8868\u60C5 \u{1F60A}","crbqwx"],html:`<div class="b3-list-item__first"><span class="b3-list-item__text">${this.i18n.insertEmoji}</span><span class="b3-list-item__meta">\u{1F60A}</span></div>`,id:"insertEmoji",callback(i){i.insert("\u{1F60A}")}}],this.protyleOptions={toolbar:["block-ref","a","|","text","strong","em","u","s","mark","sup","sub","clear","|","code","kbd","tag","inline-math","inline-memo"]},console.log(this.i18n.helloPlugin)}onLayoutReady(){const t=this.addTopBar({icon:"iconFace",title:this.i18n.addTopBarIcon,position:"right",callback:()=>{if(this.isMobile)this.addMenu();else{let n=t.getBoundingClientRect();n.width===0&&(n=document.querySelector("#barMore").getBoundingClientRect()),n.width===0&&(n=document.querySelector("#barPlugins").getBoundingClientRect()),this.addMenu(n)}}}),e=document.createElement("template");e.innerHTML=`<div class="toolbar__item ariaLabel" aria-label="Remove plugin-sample Data">
-    <svg>
-        <use xlink:href="#iconTrashcan"></use>
-    </svg>
-</div>`,e.content.firstElementChild.addEventListener("click",()=>{(0,o.confirm)("\u26A0\uFE0F",this.i18n.confirmRemove.replace("${name}",this.name),()=>{this.removeData(l).then(()=>{this.data[l]={readonlyText:"Readonly"},(0,o.showMessage)(`[${this.name}]: ${this.i18n.removedData}`)}).catch(n=>{(0,o.showMessage)(`[${this.name}] remove data [${l}] fail: `,n)})})}),this.addStatusBar({element:e.content.firstElementChild}),this.loadData(l).catch(n=>{console.log(`[${this.name}] load data [${l}] fail: `,n)}),console.log(`frontend: ${(0,o.getFrontend)()}; backend: ${(0,o.getBackend)()}`)}onunload(){console.log(this.i18n.byePlugin)}uninstall(){this.removeData(l).catch(t=>{(0,o.showMessage)(`uninstall [${this.name}] remove data [${l}] fail: ${t.msg}`)})}updateCards(t){return b(this,null,function*(){return t.cards.sort((e,n)=>e.blockID<n.blockID?-1:e.blockID>n.blockID?1:0),t})}eventBusPaste(t){t.preventDefault(),t.detail.resolve({textPlain:t.detail.textPlain.trim()})}eventBusLog({detail:t}){console.log(t)}blockIconEvent({detail:t}){t.menu.addItem({id:"pluginSample_removeSpace",iconHTML:"",label:this.i18n.removeSpace,click:()=>{const e=[];t.blockElements.forEach(n=>{const i=n.querySelector('[contenteditable="true"]');i&&(i.textContent=i.textContent.replace(/ /g,""),e.push({id:n.dataset.nodeId,data:n.outerHTML,action:"update"}))}),t.protyle.getInstance().transaction(e)}})}showDialog(){const t=new o.Dialog({title:`SiYuan ${o.Constants.SIYUAN_VERSION}`,content:`<div class="b3-dialog__content">
-    <div>appId:</div>
-    <div class="fn__hr"></div>
-    <div class="plugin-sample__time">${this.app.appId}</div>
-    <div class="fn__hr"></div>
-    <div class="fn__hr"></div>
-    <div>API demo:</div>
-    <div class="fn__hr"></div>
-    <div class="plugin-sample__time">System current time: <span id="time"></span></div>
-    <div class="fn__hr"></div>
-    <div class="fn__hr"></div>
-    <div>Protyle demo:</div>
-    <div class="fn__hr"></div>
-    <div id="protyle" style="height: 360px;"></div>
-</div>`,width:this.isMobile?"92vw":"560px",height:"540px"});new o.Protyle(this.app,t.element.querySelector("#protyle"),{blockId:this.getEditor().protyle.block.rootID}),(0,o.fetchPost)("/api/system/currentTime",{},e=>{t.element.querySelector("#time").innerHTML=new Date(e.data).toString()})}addMenu(t){const e=new o.Menu("topBarSample",()=>{console.log(this.i18n.byeMenu)});e.addItem({icon:"iconSettings",label:"Open Setting",click:()=>{(0,o.openSetting)(this.app)}}),e.addItem({icon:"iconDrag",label:"Open Attribute Panel",click:()=>{(0,o.openAttributePanel)({nodeElement:this.getEditor().protyle.wysiwyg.element.firstElementChild,protyle:this.getEditor().protyle,focusName:"custom"})}}),e.addItem({icon:"iconInfo",label:"Dialog(open doc first)",accelerator:this.commands[0].customHotkey,click:()=>{this.showDialog()}}),e.addItem({icon:"iconFocus",label:"Select Opened Doc(open doc first)",click:()=>{(0,o.getModelByDockType)("file").selectItem(this.getEditor().protyle.notebookId,this.getEditor().protyle.path)}}),this.isMobile?e.addItem({icon:"iconFile",label:"Open Doc(open doc first)",click:()=>{(0,o.openMobileFileById)(this.app,this.getEditor().protyle.block.rootID)}}):(e.addItem({icon:"iconFace",label:"Open Custom Tab",click:()=>{const n=(0,o.openTab)({app:this.app,custom:{icon:"iconFace",title:"Custom Tab",data:{text:o.platformUtils.isHuawei()?"Hello, Huawei!":"This is my custom tab"},id:this.name+u}});console.log(n)}}),e.addItem({icon:"iconImage",label:"Open Asset Tab(First open the Chinese help document)",click:()=>{const n=(0,o.openTab)({app:this.app,asset:{path:"assets/paragraph-20210512165953-ag1nib4.svg"}});console.log(n)}}),e.addItem({icon:"iconFile",label:"Open Doc Tab(open doc first)",click:()=>b(this,null,function*(){const n=yield(0,o.openTab)({app:this.app,doc:{id:this.getEditor().protyle.block.rootID}});console.log(n)})}),e.addItem({icon:"iconSearch",label:"Open Search Tab",click:()=>{const n=(0,o.openTab)({app:this.app,search:{k:"SiYuan"}});console.log(n)}}),e.addItem({icon:"iconRiffCard",label:"Open Card Tab",click:()=>{const n=(0,o.openTab)({app:this.app,card:{type:"all"}});console.log(n)}}),e.addItem({icon:"iconLayout",label:"Open Float Layer(open doc first)",click:()=>{this.addFloatLayer({refDefs:[{refID:this.getEditor().protyle.block.rootID}],x:window.innerWidth-768-120,y:32,isBacklink:!1})}}),e.addItem({icon:"iconOpenWindow",label:"Open Doc Window(open doc first)",click:()=>{(0,o.openWindow)({doc:{id:this.getEditor().protyle.block.rootID}})}})),e.addItem({icon:"iconLock",label:"Lockscreen",click:()=>{(0,o.lockScreen)(this.app)}}),e.addItem({icon:"iconQuit",label:"Exit Application",click:()=>{(0,o.exitSiYuan)()}}),e.addItem({icon:"iconDownload",label:"Save Layout",click:()=>{(0,o.saveLayout)(()=>{(0,o.showMessage)("Layout saved")})}}),e.addItem({icon:"iconScrollHoriz",label:"Event Bus",type:"submenu",submenu:[{icon:"iconSelect",label:"On ws-main",click:()=>{this.eventBus.on("ws-main",this.eventBusLog)}},{icon:"iconClose",label:"Off ws-main",click:()=>{this.eventBus.off("ws-main",this.eventBusLog)}},{icon:"iconSelect",label:"On click-blockicon",click:()=>{this.eventBus.on("click-blockicon",this.blockIconEventBindThis)}},{icon:"iconClose",label:"Off click-blockicon",click:()=>{this.eventBus.off("click-blockicon",this.blockIconEventBindThis)}},{icon:"iconSelect",label:"On click-pdf",click:()=>{this.eventBus.on("click-pdf",this.eventBusLog)}},{icon:"iconClose",label:"Off click-pdf",click:()=>{this.eventBus.off("click-pdf",this.eventBusLog)}},{icon:"iconSelect",label:"On click-editorcontent",click:()=>{this.eventBus.on("click-editorcontent",this.eventBusLog)}},{icon:"iconClose",label:"Off click-editorcontent",click:()=>{this.eventBus.off("click-editorcontent",this.eventBusLog)}},{icon:"iconSelect",label:"On click-editortitleicon",click:()=>{this.eventBus.on("click-editortitleicon",this.eventBusLog)}},{icon:"iconClose",label:"Off click-editortitleicon",click:()=>{this.eventBus.off("click-editortitleicon",this.eventBusLog)}},{icon:"iconSelect",label:"On click-flashcard-action",click:()=>{this.eventBus.on("click-flashcard-action",this.eventBusLog)}},{icon:"iconClose",label:"Off click-flashcard-action",click:()=>{this.eventBus.off("click-flashcard-action",this.eventBusLog)}},{icon:"iconSelect",label:"On open-noneditableblock",click:()=>{this.eventBus.on("open-noneditableblock",this.eventBusLog)}},{icon:"iconClose",label:"Off open-noneditableblock",click:()=>{this.eventBus.off("open-noneditableblock",this.eventBusLog)}},{icon:"iconSelect",label:"On loaded-protyle-static",click:()=>{this.eventBus.on("loaded-protyle-static",this.eventBusLog)}},{icon:"iconClose",label:"Off loaded-protyle-static",click:()=>{this.eventBus.off("loaded-protyle-static",this.eventBusLog)}},{icon:"iconSelect",label:"On loaded-protyle-dynamic",click:()=>{this.eventBus.on("loaded-protyle-dynamic",this.eventBusLog)}},{icon:"iconClose",label:"Off loaded-protyle-dynamic",click:()=>{this.eventBus.off("loaded-protyle-dynamic",this.eventBusLog)}},{icon:"iconSelect",label:"On switch-protyle",click:()=>{this.eventBus.on("switch-protyle",this.eventBusLog)}},{icon:"iconClose",label:"Off switch-protyle",click:()=>{this.eventBus.off("switch-protyle",this.eventBusLog)}},{icon:"iconSelect",label:"On destroy-protyle",click:()=>{this.eventBus.on("destroy-protyle",this.eventBusLog)}},{icon:"iconClose",label:"Off destroy-protyle",click:()=>{this.eventBus.off("destroy-protyle",this.eventBusLog)}},{icon:"iconSelect",label:"On open-menu-doctree",click:()=>{this.eventBus.on("open-menu-doctree",this.eventBusLog)}},{icon:"iconClose",label:"Off open-menu-doctree",click:()=>{this.eventBus.off("open-menu-doctree",this.eventBusLog)}},{icon:"iconSelect",label:"On open-menu-blockref",click:()=>{this.eventBus.on("open-menu-blockref",this.eventBusLog)}},{icon:"iconClose",label:"Off open-menu-blockref",click:()=>{this.eventBus.off("open-menu-blockref",this.eventBusLog)}},{icon:"iconSelect",label:"On open-menu-fileannotationref",click:()=>{this.eventBus.on("open-menu-fileannotationref",this.eventBusLog)}},{icon:"iconClose",label:"Off open-menu-fileannotationref",click:()=>{this.eventBus.off("open-menu-fileannotationref",this.eventBusLog)}},{icon:"iconSelect",label:"On open-menu-tag",click:()=>{this.eventBus.on("open-menu-tag",this.eventBusLog)}},{icon:"iconClose",label:"Off open-menu-tag",click:()=>{this.eventBus.off("open-menu-tag",this.eventBusLog)}},{icon:"iconSelect",label:"On open-menu-link",click:()=>{this.eventBus.on("open-menu-link",this.eventBusLog)}},{icon:"iconClose",label:"Off open-menu-link",click:()=>{this.eventBus.off("open-menu-link",this.eventBusLog)}},{icon:"iconSelect",label:"On open-menu-image",click:()=>{this.eventBus.on("open-menu-image",this.eventBusLog)}},{icon:"iconClose",label:"Off open-menu-image",click:()=>{this.eventBus.off("open-menu-image",this.eventBusLog)}},{icon:"iconSelect",label:"On open-menu-av",click:()=>{this.eventBus.on("open-menu-av",this.eventBusLog)}},{icon:"iconClose",label:"Off open-menu-av",click:()=>{this.eventBus.off("open-menu-av",this.eventBusLog)}},{icon:"iconSelect",label:"On open-menu-content",click:()=>{this.eventBus.on("open-menu-content",this.eventBusLog)}},{icon:"iconClose",label:"Off open-menu-content",click:()=>{this.eventBus.off("open-menu-content",this.eventBusLog)}},{icon:"iconSelect",label:"On open-menu-breadcrumbmore",click:()=>{this.eventBus.on("open-menu-breadcrumbmore",this.eventBusLog)}},{icon:"iconClose",label:"Off open-menu-breadcrumbmore",click:()=>{this.eventBus.off("open-menu-breadcrumbmore",this.eventBusLog)}},{icon:"iconSelect",label:"On open-menu-inbox",click:()=>{this.eventBus.on("open-menu-inbox",this.eventBusLog)}},{icon:"iconClose",label:"Off open-menu-inbox",click:()=>{this.eventBus.off("open-menu-inbox",this.eventBusLog)}},{icon:"iconSelect",label:"On input-search",click:()=>{this.eventBus.on("input-search",this.eventBusLog)}},{icon:"iconClose",label:"Off input-search",click:()=>{this.eventBus.off("input-search",this.eventBusLog)}},{icon:"iconSelect",label:"On paste",click:()=>{this.eventBus.on("paste",this.eventBusPaste)}},{icon:"iconClose",label:"Off paste",click:()=>{this.eventBus.off("paste",this.eventBusPaste)}},{icon:"iconSelect",label:"On open-siyuan-url-plugin",click:()=>{this.eventBus.on("open-siyuan-url-plugin",this.eventBusLog)}},{icon:"iconClose",label:"Off open-siyuan-url-plugin",click:()=>{this.eventBus.off("open-siyuan-url-plugin",this.eventBusLog)}},{icon:"iconSelect",label:"On open-siyuan-url-block",click:()=>{this.eventBus.on("open-siyuan-url-block",this.eventBusLog)}},{icon:"iconClose",label:"Off open-siyuan-url-block",click:()=>{this.eventBus.off("open-siyuan-url-block",this.eventBusLog)}},{icon:"iconSelect",label:"On opened-notebook",click:()=>{this.eventBus.on("opened-notebook",this.eventBusLog)}},{icon:"iconClose",label:"Off opened-notebook",click:()=>{this.eventBus.off("opened-notebook",this.eventBusLog)}},{icon:"iconSelect",label:"On closed-notebook",click:()=>{this.eventBus.on("closed-notebook",this.eventBusLog)}},{icon:"iconClose",label:"Off closed-notebook",click:()=>{this.eventBus.off("closed-notebook",this.eventBusLog)}}]}),e.addSeparator(),e.addItem({icon:"iconSparkles",label:this.data[l].readonlyText||"Readonly",type:"readonly"}),this.isMobile?e.fullscreen():e.open({x:t.right,y:t.bottom,isLeft:!0})}getEditor(){const t=(0,o.getAllEditor)();if(t.length===0){(0,o.showMessage)("please open doc first");return}return t[0]}}module.exports=r})();
+        <div class="aiflash-tabs">
+          <button class="b3-button b3-button--outline aiflash-tab active" data-tab="review">复习</button>
+          <button class="b3-button b3-button--outline aiflash-tab" data-tab="gen">生成</button>
+          <button class="b3-button b3-button--outline aiflash-tab" data-tab="lib">卡片</button>
+          <button class="b3-button b3-button--outline aiflash-tab" data-tab="set">设置</button>
+        </div>
+        <div class="aiflash-view active" data-view="review"><div id="af-review"></div></div>
+        <div class="aiflash-view" data-view="gen">
+          <textarea class="b3-text-field fn__block aiflash-textarea" id="af-src" placeholder="粘贴笔记内容..."></textarea>
+          <div class="fn__flex aiflash-gap">
+            <select class="b3-select" id="af-count"><option>5</option><option selected>10</option><option>15</option></select>
+            <select class="b3-select" id="af-level"><option>基础</option><option selected>考试</option><option>深度理解</option></select>
+          </div>
+          <div class="fn__flex aiflash-gap">
+            <button class="b3-button b3-button--outline" id="af-gen">生成闪卡</button>
+            <button class="b3-button b3-button--outline" id="af-add">加入复习</button>
+            <button class="b3-button b3-button--outline" id="af-clear">清空</button>
+          </div>
+          <div class="aiflash-result" id="af-result"></div>
+        </div>
+        <div class="aiflash-view" data-view="lib">
+          <input class="b3-text-field fn__block" id="af-search" placeholder="搜索卡片">
+          <div id="af-lib"></div>
+        </div>
+        <div class="aiflash-view" data-view="set">
+          <select class="b3-select fn__block" id="af-provider">
+            <option value="offline">离线规则</option>
+            <option value="openai">OpenAI 官方</option>
+            <option value="openai_compatible">OpenAI 兼容</option>
+            <option value="custom">自定义 HTTP</option>
+          </select>
+          <input class="b3-text-field fn__block" id="af-url" placeholder="接口地址，如 https://api.openai.com/v1/chat/completions">
+          <input class="b3-text-field fn__block" id="af-key" placeholder="API Key，可留空">
+          <input class="b3-text-field fn__block" id="af-model" placeholder="模型名">
+          <div class="fn__flex aiflash-gap">
+            <button class="b3-button b3-button--outline" id="af-test">测试连接</button>
+            <button class="b3-button b3-button--outline" id="af-save">保存</button>
+            <button class="b3-button b3-button--outline" id="af-sample">导入示例</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  bind(r) {
+    r.querySelectorAll(".aiflash-tab").forEach((t) =>
+      t.onclick = () => {
+        r.querySelectorAll(".aiflash-tab").forEach((x) => x.classList.remove("active"));
+        r.querySelectorAll(".aiflash-view").forEach((x) => x.classList.remove("active"));
+        t.classList.add("active");
+        r.querySelector(`[data-view="${t.dataset.tab}"]`).classList.add("active");
+      }
+    );
+
+    r.querySelector("#af-gen").onclick = async () => {
+      const text = r.querySelector("#af-src").value.trim();
+      if (!text) return showMessage("请先粘贴内容");
+      try {
+        this.gen = await this.ai(text, +r.querySelector("#af-count").value, r.querySelector("#af-level").value);
+        showMessage("生成完成");
+      } catch (e) {
+        this.gen = this.offline(text, +r.querySelector("#af-count").value, r.querySelector("#af-level").value);
+        showMessage("AI失败，已用离线规则");
+      }
+      this.renderGen(r);
+    };
+
+    r.querySelector("#af-add").onclick = async () => {
+      if (!this.gen.length) return showMessage("没有可加入的卡片");
+      const n = this.gen.length;
+      this.gen.forEach((c) => this.state.cards.push(this.card(c.front, c.back)));
+      this.gen = [];
+      r.querySelector("#af-src").value = "";
+      this.resetQ();
+      await this.save();
+      this.render(r);
+      showMessage(`已加入 ${n} 张卡片，并清空生成区`);
+    };
+
+    r.querySelector("#af-clear").onclick = () => {
+      this.gen = [];
+      r.querySelector("#af-src").value = "";
+      this.renderGen(r);
+      showMessage("已清空");
+    };
+
+    r.querySelector("#af-save").onclick = async () => {
+      this.readSet(r);
+      await this.save();
+      showMessage("设置已保存");
+    };
+
+    r.querySelector("#af-test").onclick = async () => {
+      this.readSet(r);
+      try {
+        const x = await this.ai("苹果是一种常见水果，富含膳食纤维。", 1, "基础");
+        showMessage(x.length ? "AI 连接成功" : "接口响应异常");
+      } catch (e) {
+        showMessage("AI 连接失败：" + e.message);
+      }
+    };
+
+    r.querySelector("#af-sample").onclick = async () => {
+      SAMPLE.forEach(([f, b]) => this.state.cards.push(this.card(f, b)));
+      this.resetQ();
+      await this.save();
+      this.render(r);
+      showMessage("已导入示例");
+    };
+
+    r.querySelector("#af-search").oninput = () => this.renderLib(r);
+  }
+
+  readSet(r) {
+    this.state.settings = {
+      provider: r.querySelector("#af-provider").value,
+      baseUrl: r.querySelector("#af-url").value.trim(),
+      apiKey: r.querySelector("#af-key").value.trim(),
+      model: r.querySelector("#af-model").value.trim() || "gpt-4o-mini",
+    };
+  }
+
+  render(r) {
+    this.fixDay();
+    this.resetQ();
+    const s = this.state.settings;
+    r.querySelector("#af-provider").value = s.provider || "offline";
+    r.querySelector("#af-url").value = s.baseUrl || "";
+    r.querySelector("#af-key").value = s.apiKey || "";
+    r.querySelector("#af-model").value = s.model || "gpt-4o-mini";
+    this.renderReview(r);
+    this.renderGen(r);
+    this.renderLib(r);
+  }
+
+  renderReview(r) {
+    const box = r.querySelector("#af-review");
+    const total = this.done + this.q.length + (this.cur ? 1 : 0);
+    if (!this.cur) {
+      box.innerHTML = `<div class="aiflash-empty">今天没有待复习卡片。总卡片：${this.state.cards.length}，今日已学：${this.state.reviewedToday || 0}</div>`;
+      return;
+    }
+    box.innerHTML = `
+      <div class="aiflash-stat">今日已学 ${this.state.reviewedToday || 0} · 当前轮次 ${this.done}/${total}</div>
+      <div class="aiflash-review-card">
+        <div class="aiflash-q">${this.esc(this.cur.front)}</div>
+        <details>
+          <summary>显示答案</summary>
+          <div class="aiflash-a">${this.esc(this.cur.back)}</div>
+          <div class="aiflash-grade-row">
+            <button class="b3-button b3-button--outline" data-g="0">重来</button>
+            <button class="b3-button b3-button--outline" data-g="3">困难</button>
+            <button class="b3-button b3-button--outline" data-g="4">良好</button>
+            <button class="b3-button b3-button--outline" data-g="5">简单</button>
+          </div>
+        </details>
+      </div>`;
+    box.querySelectorAll("[data-g]").forEach((b) =>
+      b.onclick = async () => {
+        this.grade(+b.dataset.g);
+        await this.save();
+        this.render(r);
+      }
+    );
+  }
+
+  renderGen(r) {
+    r.querySelector("#af-result").innerHTML = this.gen.length
+      ? this.gen.map((c, i) => `<div class="aiflash-item"><strong>${i + 1}. ${this.esc(c.front)}</strong><div>${this.esc(c.back)}</div></div>`).join("")
+      : `<div class="aiflash-empty">生成结果会显示在这里</div>`;
+  }
+
+  renderLib(r) {
+    const q = (r.querySelector("#af-search")?.value || "").toLowerCase();
+    const cs = this.state.cards.filter((c) => !q || (c.front + c.back).toLowerCase().includes(q));
+    r.querySelector("#af-lib").innerHTML = cs.length
+      ? cs.map((c) => `<div class="aiflash-item"><strong>${this.esc(c.front)}</strong><div>${this.esc(c.back)}</div><small>间隔 ${c.interval} 天 · 复习 ${c.reps} 次</small></div>`).join("")
+      : `<div class="aiflash-empty">暂无卡片</div>`;
+  }
+
+  grade(g) {
+    const c = this.cur;
+    if (!c) return;
+    if (g < 3) {
+      c.reps = 0;
+      c.interval = 0;
+      c.lapses++;
+      c.ease = Math.max(1.3, c.ease - 0.2);
+      c.dueAt = Date.now() + 6e4;
+    } else {
+      c.interval = c.reps === 0 ? 1 : c.reps === 1 ? 6 : Math.round(c.interval * c.ease);
+      c.ease = Math.max(1.3, c.ease + (0.1 - (5 - g) * (0.08 + (5 - g) * 0.02)));
+      if (g === 3) c.interval = Math.max(1, Math.round(c.interval * 0.6));
+      if (g === 5) c.interval = Math.round(c.interval * 1.35 + 1);
+      c.reps++;
+      c.dueAt = Date.now() + c.interval * 864e5;
+    }
+    this.state.reviewedToday = (this.state.reviewedToday || 0) + 1;
+    this.done++;
+    this.cur = this.q.shift() || null;
+  }
+
+  clean(t) {
+    return t.replace(/^#{1,6}\s*/gm, "").replace(/[*_`>#-]/g, "").trim();
+  }
+
+  offline(text, count, level) {
+    const a = [];
+    text.split(/\n(?=#{1,6}\s*)/).forEach((b) => {
+      const m = b.trim().match(/^(?:#{1,6}\s*)?(.+?[？?])\s*\n+([\s\S]+)/);
+      if (m) a.push({ front: this.clean(m[1]), back: this.clean(m[2]) });
+    });
+    const ps = text
+      .split(/\n{2,}|(?<=。)|(?<=？)|(?<=！)/)
+      .map((x) => this.clean(x))
+      .filter((x) => x.length > 12);
+    for (const p of ps) {
+      if (a.length >= count) break;
+      const k = (p.match(/什么是(.+?)[？?，。]/) || p.match(/(.+?)是指/) || [])[1] || p.slice(0, 18);
+      a.push({ front: level === "深度理解" ? `为什么“${k}”重要？` : `什么是“${k}”？`, back: p });
+    }
+    return a.slice(0, count);
+  }
+
+  prompt(t, c, l) {
+    return `根据材料制作${c}张中文闪卡，难度${l}。每张卡只考一个点。只输出JSON数组[{"front":"问题","back":"答案"}]。材料：\n${t}`;
+  }
+
+  parse(d) {
+    const x = d?.choices?.[0]?.message?.content ?? d?.text ?? d?.content ?? d?.result ?? d?.output ?? d;
+    const raw = typeof x === "string" ? x.replace(/```json|```/g, "").trim() : JSON.stringify(x);
+    const y = JSON.parse(raw);
+    return Array.isArray(y) ? y.filter((z) => z.front && z.back) : [];
+  }
+
+  async ai(text, count, level) {
+    const s = this.state.settings;
+    if ((s.provider || "offline") === "offline") return this.offline(text, count, level);
+    let url = (s.baseUrl || "").trim();
+    if (!url && s.provider === "openai") url = "https://api.openai.com/v1/chat/completions";
+    if (!url) throw Error("未配置接口地址");
+    const h = { "Content-Type": "application/json" };
+    if (s.apiKey) h.Authorization = `Bearer ${s.apiKey}`;
+    const body = { model: s.model || "gpt-4o-mini", temperature: 0.3, messages: [{ role: "user", content: this.prompt(text, count, level) }] };
+    const res = await fetch(url, { method: "POST", headers: h, body: JSON.stringify(body) });
+    if (!res.ok) throw Error(`HTTP ${res.status}`);
+    return this.parse(await res.json()).slice(0, count);
+  }
+};
