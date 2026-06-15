@@ -1,0 +1,35 @@
+{
+  "name": "ai-flashcards-native",
+  "author": "tortl",
+  "url": "https://github.com/tortletortle/a-better-flashcard-plugin-of-siyuan",
+  "version": "0.1.0",
+  "minAppVersion": "3.6.4",
+  "backends": ["all"],
+  "frontends": ["all"],
+  "disabledInPublish": false,
+  "displayName": {
+    "default": "AI Flashcards Native",
+    "zh_CN": "AI 闪卡原生版"
+  },
+  "description": {
+    "default": "Generate and review flashcards inside SiYuan with a native dock UI.",
+    "zh_CN": "在思源中以原生停靠面板生成和复习闪卡。"
+  },
+  "readme": {
+    "default": "README.md",
+    "zh_CN": "README_zh_CN.md"
+  },
+  "funding": {
+    "custom": [
+      "https://www.buymeacoffee.com/tortletortle"
+    ]
+  },
+  "keywords": [
+    "flashcard",
+    "anki",
+    "ai",
+    "spaced repetition",
+    "native",
+    "思源插件"
+  ]
+}

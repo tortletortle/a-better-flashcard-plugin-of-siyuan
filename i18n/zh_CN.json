@@ -1,0 +1,7 @@
+{
+  "dockTitle": "AI 闪卡",
+  "addTopBarIcon": "打开 AI 闪卡",
+  "helloPlugin": "AI 闪卡原生版已加载",
+  "openedInDock": "AI 闪卡已在右侧边栏打开",
+  "dockNotFound": "没有找到 AI 闪卡侧栏，请确认插件已启用并检查右侧边栏是否折叠"
+}
