@@ -146,9 +146,12 @@ module.exports = class AIFlashcardsNativePlugin extends Plugin {
   }
 
   exposePublicAPI() {
+    const plugin = this;
     const api = {
       version: "1.0.0",
       plugin: this,
+
+      // ── 导航 & 操作 ──────────────────────────
       listDecks: () => this.listPublicDecks(),
       setActiveDeck: (deckID) => this.setActiveDeck(deckID),
       createDeck: (name) => this.createNativeDeck(name),
@@ -158,6 +161,63 @@ module.exports = class AIFlashcardsNativePlugin extends Plugin {
       openWorkbench: () => this.openWorkbench(),
       openReview: () => this.openNativeReview(),
       openTrainer: () => this.openTrainer(),
+
+      // ── 数据读取 ──────────────────────────────
+
+      /** 获取所有卡包列表 */
+      getPacks: () => (plugin.state.packs || []).map(p => ({
+        id: p.id, name: p.name, cardCount: p.cardCount ?? 0,
+        dueCardCount: p.dueCardCount ?? 0, quick: Boolean(p.quick),
+      })),
+
+      /** 获取指定卡包的卡片列表（默认当前卡包） */
+      getCards: (packId) => {
+        const id = packId || plugin.state.activePackId;
+        return (plugin.state.cards || [])
+          .filter(c => c.packId === id)
+          .map(c => ({
+            blockID: c.blockID, front: c.front, back: c.back,
+            reps: c.reps ?? 0, lapses: c.lapses ?? 0,
+            ease: c.ease ?? 2.5, interval: c.interval ?? 0,
+            dueAt: c.dueAt, mastery: plugin.cardMastery(c),
+          }));
+      },
+
+      /** 获取复习历史（最近 days 天，默认 30） */
+      getReviewHistory: (days = 30) => {
+        const history = plugin.state.reviewHistory || [];
+        if (!days || days >= history.length) return [...history];
+        return history.slice(-days);
+      },
+
+      /** 获取统计概览 */
+      getStats: () => {
+        const cards = plugin.state.cards || [];
+        const history = plugin.state.reviewHistory || [];
+        return {
+          totalCards: cards.length,
+          reviewedToday: plugin.state.reviewedToday || 0,
+          activePackId: plugin.state.activePackId,
+          activePackName: (plugin.activePack() || {}).name || "",
+          ...require(_pluginDir + "/src/chart").computeCardStats(cards, history),
+        };
+      },
+
+      /** 获取单张卡片掌握度 */
+      getCardMastery: (cardOrBlockID) => {
+        if (typeof cardOrBlockID === "string") {
+          const card = (plugin.state.cards || []).find(c => c.blockID === cardOrBlockID);
+          return card ? plugin.cardMastery(card) : "unknown";
+        }
+        return plugin.cardMastery(cardOrBlockID);
+      },
+
+      /** 获取知识图谱数据（节点+边） */
+      getGraphData: (packId) => {
+        const id = packId || plugin.state.activePackId;
+        const cards = (plugin.state.cards || []).filter(c => c.packId === id);
+        return plugin.buildGraphData(cards);
+      },
     };
     globalThis.aiFlashcardsNativeAPI = api;
     window.dispatchEvent?.(

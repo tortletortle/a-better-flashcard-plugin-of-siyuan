@@ -396,6 +396,73 @@ console.log("\nTest 8: Stats / Chart integration...");
   assert(p.chartCurveLayout == null, "chartCurveLayout is null/undefined before onload");
 }
 
+// ── Test 9: Public data API ───────────────────────────
+console.log("\nTest 9: Public data API methods...");
+{
+  const p = new PluginClass({});
+  p.state = p.normalize({
+    packs: [{ id: "test", name: "测试卡包", cardCount: 5 }],
+    activePackId: "test",
+    cards: [
+      { blockID: "b1", packId: "test", front: "Q1", back: "A1", reps: 5, lapses: 0, ease: 2.5, interval: 7, dueAt: Date.now() + 864e5 * 10 },
+      { blockID: "b2", packId: "test", front: "Q2", back: "A2", reps: 1, lapses: 0, ease: 2.3, interval: 1, dueAt: Date.now() + 3600000 },
+    ],
+    reviewHistory: [
+      { date: "2026-06-12", total: 5, good: 3, mid: 1, weak: 1 },
+      { date: "2026-06-13", total: 8, good: 5, mid: 2, weak: 1 },
+    ],
+  });
+
+  // exposePublicAPI
+  p.exposePublicAPI();
+  const api = globalThis.aiFlashcardsNativeAPI;
+  assert(api != null, "globalThis.aiFlashcardsNativeAPI exists");
+
+  // getPacks
+  const packs = api.getPacks();
+  assert(Array.isArray(packs), "getPacks returns array");
+  assertEqual(packs.length, 1, "getPacks: 1 pack");
+  assertEqual(packs[0].name, "测试卡包", "getPacks: pack name");
+
+  // getCards
+  const cards = api.getCards();
+  assert(Array.isArray(cards), "getCards returns array");
+  assertEqual(cards.length, 2, "getCards: 2 cards");
+  assertEqual(cards[0].blockID, "b1", "getCards: first card blockID");
+  assert(cards[0].mastery != null, "getCards: card has mastery");
+
+  // getCards with specific packId
+  const cardsEmpty = api.getCards("nonexistent");
+  assertEqual(cardsEmpty.length, 0, "getCards: empty for unknown pack");
+
+  // getReviewHistory
+  const history = api.getReviewHistory();
+  assert(Array.isArray(history), "getReviewHistory returns array");
+  assertEqual(history.length, 2, "getReviewHistory: 2 entries");
+  assertEqual(history[0].total, 5, "getReviewHistory: first entry total");
+
+  const historyLimited = api.getReviewHistory(1);
+  assertEqual(historyLimited.length, 1, "getReviewHistory(1): 1 entry");
+
+  // getStats
+  const stats = api.getStats();
+  assert(stats != null, "getStats returns object");
+  assertEqual(stats.totalCards, 2, "getStats: totalCards");
+  assert(stats.good != null, "getStats: has good count");
+  assert(stats.totalReviews != null, "getStats: has totalReviews");
+
+  // getCardMastery
+  assertEqual(api.getCardMastery("b1"), "good", "getCardMastery by blockID");
+  assertEqual(api.getCardMastery("unknown-id"), "unknown", "getCardMastery unknown blockID");
+  assertEqual(api.getCardMastery({ reps: 1, dueAt: Date.now() + 3600000, lapses: 0 }), "mid", "getCardMastery by card object");
+
+  // getGraphData
+  const graph = api.getGraphData();
+  assert(graph != null, "getGraphData returns object");
+  assert(Array.isArray(graph.nodes), "getGraphData: has nodes");
+  assert(Array.isArray(graph.links), "getGraphData: has links");
+}
+
 // ── 汇总 ─────────────────────────────────────────────
 console.log("\n" + "=".repeat(50));
 console.log(
