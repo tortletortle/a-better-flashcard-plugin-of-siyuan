@@ -786,6 +786,10 @@ module.exports = class AIFlashcardsNativePlugin extends Plugin {
     root
       .querySelectorAll(".aiflash-view")
       .forEach((item) => item.classList.toggle("active", item.dataset.view === tabName));
+    // 切换到统计/图谱 tab 时延迟渲染（等 display 生效后）
+    if (tabName === "stats") {
+      requestAnimationFrame(() => this.renderStats(root));
+    }
   }
 
   renderAll() {
@@ -3957,6 +3961,9 @@ ${cards.map((card, index) => `${index + 1}. blockID=${card.blockID}\n${card.text
   }
 
   renderStats(root) {
+    // 统计 tab 不可见时跳过渲染（canvas 父元素 clientWidth=0）
+    const statsView = root.querySelector('[data-view="stats"]');
+    if (statsView && !statsView.classList.contains("active")) return;
     const days = Number(root.querySelector("#af-stats-range")?.value || 30);
     const cards = this.state.cards || [];
     const history = this.state.reviewHistory || [];

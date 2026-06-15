@@ -209,6 +209,7 @@
 .aiflash-review-card,
 .aiflash-wrap--tab .aiflash-view[data-view="lib"],
 .aiflash-wrap--tab .aiflash-view[data-view="graph"],
+.aiflash-wrap--tab .aiflash-view[data-view="stats"],
 .aiflash-wrap--tab .aiflash-view[data-view="set"] {
   border: 1px solid var(--b3-border-color);
   border-radius: 10px;
@@ -220,6 +221,7 @@
 .aiflash-wrap--tab .aiflash-review-card,
 .aiflash-wrap--tab .aiflash-view[data-view="lib"],
 .aiflash-wrap--tab .aiflash-view[data-view="graph"],
+.aiflash-wrap--tab .aiflash-view[data-view="stats"],
 .aiflash-wrap--tab .aiflash-view[data-view="set"] {
   border-radius: 14px;
   padding: 18px;
