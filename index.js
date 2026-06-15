@@ -38,6 +38,9 @@ const gd = require(_pluginDir + "/src/graph-data");
 const gl = require(_pluginDir + "/src/graph-layout");
 const { GraphRenderer } = require(_pluginDir + "/src/graph-render");
 const chart = require(_pluginDir + "/src/chart");
+const sa = require(_pluginDir + "/src/siyuan-api");
+const lr = require(_pluginDir + "/src/lib-render");
+const tui = require(_pluginDir + "/src/trainer-ui");
 
 const KEY = "flashcard-state";
 const DOCK = "ai_flashcards_native_dock";
@@ -386,131 +389,29 @@ module.exports = class AIFlashcardsNativePlugin extends Plugin {
     return response.data;
   }
 
+  riffDeckID(deck) { return sa.riffDeckID(deck); }
+  quickDeckID() { return sa.quickDeckID(); }
+  isQuickDeckID(deckID) { return sa.isQuickDeckID(deckID); }
+  riffDecksFromApi(data) { return sa.riffDecksFromApi(data); }
+  deckFromApi(deck) { return sa.deckFromApi(deck); }
+  createdDeckFromApi(data, name) { return sa.createdDeckFromApi(data, name); }
+
   firstDefined(...values) { return firstDefined(...values); }
-
   numberFromApi(...values) { return _numberFromApi(...values); }
-
-  riffDeckID(deck) {
-    return String(
-      this.firstDefined(deck?.id, deck?.deckID, deck?.deckId, deck?.deck_id) ||
-        "",
-    );
-  }
-
-  quickDeckID() {
-    return Constants?.QUICK_DECK_ID || "20230218211946-2kw8jgx";
-  }
-
-  isQuickDeckID(deckID) {
-    return Boolean(deckID && deckID === this.quickDeckID());
-  }
-
-  riffDecksFromApi(data) {
-    const source = Array.isArray(data)
-      ? data
-      : this.firstDefined(
-          data?.decks,
-          data?.riffDecks,
-          data?.deckList,
-          data?.list,
-          data?.items,
-          data?.data,
-          [],
-        );
-    const decks = Array.isArray(source) ? source : [];
-    const seen = new Set();
-    return decks.filter((deck) => {
-      const id = this.riffDeckID(deck);
-      if (!id || seen.has(id)) {
-        return false;
-      }
-      seen.add(id);
-      return true;
-    });
-  }
-
-  deckFromApi(deck) {
-    const id = this.riffDeckID(deck);
-    const cardCount = this.numberFromApi(
-      deck.cardCount,
-      deck.size,
-      deck.count,
-      deck.total,
-      deck.cardSize,
-    );
-    return {
-      id,
-      name: deck.name || deck.title || "未命名卡包",
-      cardCount,
-      size: cardCount,
-      dueCardCount: this.numberFromApi(
-        deck.dueCardCount,
-        deck.dueCount,
-        deck.due,
-      ),
-      newCardCount: this.numberFromApi(
-        deck.newCardCount,
-        deck.newCount,
-        deck.new,
-      ),
-      todayReviewedCardCount: this.numberFromApi(
-        deck.todayReviewedCardCount,
-        deck.reviewedCardCount,
-        deck.todayReviewed,
-      ),
-      created: deck.created || deck.createdAt || "",
-      updated: deck.updated || deck.updatedAt || "",
-      quick: Boolean(deck.quick),
-      native: true,
-    };
-  }
-
-  createdDeckFromApi(data, fallbackName) {
-    const deck = data?.deck || data?.riffDeck || data;
-    const id =
-      this.riffDeckID(deck) ||
-      data?.deckID ||
-      data?.deckId ||
-      data?.id ||
-      (typeof data === "string" ? data : "");
-    return this.deckFromApi({
-      ...(typeof deck === "object" ? deck : {}),
-      id,
-      name: deck?.name || fallbackName,
-    });
-  }
 
   async quickDeckFromApi() {
     const id = this.quickDeckID();
-    if (!id) {
-      return null;
-    }
+    if (!id) return null;
     const data = await this.api("/api/riff/getRiffCards", {
-      id,
-      deckID: id,
-      page: 1,
-      pageSize: 1,
+      id, deckID: id, page: 1, pageSize: 1,
     });
-    const total = this.numberFromApi(
-      data?.total,
-      data?.count,
-      data?.size,
-      Array.isArray(data) ? data.length : 0,
-    );
-    return this.deckFromApi({
-      id,
-      name: "快速制卡",
-      cardCount: total,
-      size: total,
-      quick: true,
-    });
+    const total = sa.numberFrom([data?.total, data?.count, data?.size, Array.isArray(data) ? data.length : 0]);
+    return this.deckFromApi({ id, name: "快速制卡", cardCount: total, size: total, quick: true });
   }
 
   async syncNativeDecks() {
     const data = await this.api("/api/riff/getRiffDecks");
-    const packs = this.riffDecksFromApi(data).map((deck) =>
-      this.deckFromApi(deck),
-    );
+    const packs = this.riffDecksFromApi(data).map((deck) => this.deckFromApi(deck));
     const quickPack = await this.quickDeckFromApi().catch((e) => {
       console.warn("load quick riff deck failed", e);
       return null;
@@ -520,29 +421,17 @@ module.exports = class AIFlashcardsNativePlugin extends Plugin {
     }
     if (packs.length) {
       this.state.packs = packs;
-      if (
-        !this.state.activePackId ||
-        !packs.some((pack) => pack.id === this.state.activePackId)
-      ) {
+      if (!this.state.activePackId || !packs.some((pack) => pack.id === this.state.activePackId)) {
         this.state.activePackId = packs[0].id;
       }
       this.lastDeckSyncAt = Date.now();
       await this.save();
       return;
     }
-    const quickDeckID = this.quickDeckID();
-    if (quickDeckID) {
-      this.state.packs = [
-        {
-          id: quickDeckID,
-          name: "快速制卡",
-          cardCount: 0,
-          size: 0,
-          quick: true,
-          native: true,
-        },
-      ];
-      this.state.activePackId = quickDeckID;
+    const qid = this.quickDeckID();
+    if (qid) {
+      this.state.packs = [{ id: qid, name: "快速制卡", cardCount: 0, size: 0, quick: true, native: true }];
+      this.state.activePackId = qid;
       this.lastDeckSyncAt = Date.now();
       await this.save();
     }
@@ -551,10 +440,8 @@ module.exports = class AIFlashcardsNativePlugin extends Plugin {
   async listPublicDecks() {
     await this.syncNativeDecks().catch(() => null);
     return this.state.packs.map((pack) => ({
-      id: pack.id,
-      name: pack.name,
-      cardCount: pack.cardCount || 0,
-      dueCardCount: pack.dueCardCount || 0,
+      id: pack.id, name: pack.name,
+      cardCount: pack.cardCount || 0, dueCardCount: pack.dueCardCount || 0,
       active: pack.id === this.state.activePackId,
     }));
   }
@@ -3422,7 +3309,7 @@ ${cards.map((card, index) => `${index + 1}. blockID=${card.blockID}\n${card.text
     }
     this.trainerDownload(
       "science-trainer-siyuan-cards.json",
-      JSON.stringify(accepted, null, 2),
+      tui.acceptedToJSON(accepted),
       "application/json;charset=utf-8",
     );
   }
@@ -3433,14 +3320,9 @@ ${cards.map((card, index) => `${index + 1}. blockID=${card.blockID}\n${card.text
       showMessage("暂无已确认卡片");
       return;
     }
-    const content = `# 理科训练舱卡片导出\n\n${accepted
-      .map(
-        (card) => `---\nid: ${card.id}\ntopic: ${card.topic}\nsubject: ${card.subject}\ndomain: ${card.domain}\nchapter: ${card.chapter || ""}\ndepth: ${card.depth}\nknowledge_type: ${card.knowledgeType || ""}\ncard_type: ${card.cardType}\ndifficulty: ${card.difficulty || ""}\nangle: ${card.angle}\ncreated_at: ${card.createdAt}\nclassified_by: ${card.classifiedBy || "rule"}\nclassified_at: ${card.classifiedAt || ""}\nexam_use: ${card.examUse || ""}\nprerequisites:\n${(card.prerequisites || []).map((item) => `  - ${item}`).join("\n") || "  - 未整理"}\ntags:\n${(card.tags || []).map((tag) => `  - ${tag}`).join("\n")}\n---\n\n### ${card.cardType}\n\nQ: ${card.front}\n\nA: ${card.back}\n`,
-      )
-      .join("\n---\n\n")}`;
     this.trainerDownload(
       "science-trainer-siyuan-cards.md",
-      content,
+      tui.acceptedToMarkdown(accepted),
       "text/markdown;charset=utf-8",
     );
   }
@@ -4071,9 +3953,7 @@ ${cards.map((card, index) => `${index + 1}. blockID=${card.blockID}\n${card.text
 
   async renderLib(root) {
     const lib = root.querySelector("#af-lib");
-    if (!lib) {
-      return;
-    }
+    if (!lib) return;
     const deckID = this.state.activePackId;
     if (deckID && this.nativeCardsDeckID !== deckID) {
       lib.innerHTML = `<div class="aiflash-empty">正在读取思源原生卡片...</div>`;
@@ -4086,11 +3966,7 @@ ${cards.map((card, index) => `${index + 1}. blockID=${card.blockID}\n${card.text
     const query = (root.querySelector("#af-search")?.value || "").toLowerCase();
     const isQuickDeck = this.isQuickDeckID(deckID);
     const targetDeckCount = this.state.packs.filter(
-      (pack) =>
-        pack.id &&
-        pack.id !== deckID &&
-        !pack.quick &&
-        !this.isQuickDeckID(pack.id),
+      (pack) => pack.id && pack.id !== deckID && !pack.quick && !this.isQuickDeckID(pack.id),
     ).length;
     const classifyButton = root.querySelector("#af-ai-classify");
     const classifyStatus = root.querySelector("#af-classify-status");
@@ -4105,9 +3981,7 @@ ${cards.map((card, index) => `${index + 1}. blockID=${card.blockID}\n${card.text
       classifyButton.disabled = !isQuickDeck || !targetDeckCount;
       classifyButton.title = !isQuickDeck
         ? "选择快速制卡后可用"
-        : !targetDeckCount
-          ? "需要至少一个普通原生卡组"
-          : "";
+        : !targetDeckCount ? "需要至少一个普通原生卡组" : "";
     }
     if (classifyStatus) {
       classifyStatus.textContent = isQuickDeck
@@ -4115,99 +3989,27 @@ ${cards.map((card, index) => `${index + 1}. blockID=${card.blockID}\n${card.text
         : "选择快速制卡后可用";
     }
     const generatedByBlockID = new Map(
-      this.state.cards
-        .filter((card) => card.blockID)
-        .map((card) => [card.blockID, card]),
+      this.state.cards.filter((card) => card.blockID).map((card) => [card.blockID, card]),
     );
-    const nativeCards = this.nativeCards
-      .map((card) => {
-        const blockID = this.cardBlockID(card);
-        const generated = generatedByBlockID.get(blockID);
-        return {
-          blockID,
-          front:
-            generated?.front ||
-            card.content ||
-            card.markdown ||
-            card.name ||
-            card.block?.content ||
-            "原生闪卡",
-          back:
-            generated?.back || card.deckName || this.activePack()?.name || "",
-          state: card.state ?? card.riffCard?.state ?? "",
-          due: card.due || card.dueTime || card.riffCard?.due || "",
-          nativeHTML: generated ? "" : card.nativeHTML || "",
-        };
-      })
-      .filter(
-        (card) =>
-          !query ||
-          (card.front + card.back + card.blockID).toLowerCase().includes(query),
-      );
-    const localCards = this.packCards()
-      .filter(
-        (card) =>
-          !card.blockID &&
-          (!query || (card.front + card.back).toLowerCase().includes(query)),
-      )
-      .map((card) => ({
-        blockID: "",
-        front: card.front,
-        back: card.back,
-        state: "",
-        due: "",
-      }));
+    const nativeCards = lr.mapNativeCards(this.nativeCards, generatedByBlockID, {
+      query, packName: this.activePack()?.name || "",
+      cardBlockID: (c) => this.cardBlockID(c),
+    });
+    const localCards = lr.mapLocalCards(this.packCards(), query);
     const cards = [...nativeCards, ...localCards];
-    const moveOptions = this.state.packs
-      .filter((pack) => pack.id !== deckID)
-      .map(
-        (pack) => `<option value="${pack.id}">${this.esc(pack.name)}</option>`,
-      )
-      .join("");
-    lib.innerHTML = cards.length
-      ? cards
-          .map(
-            (card) => `
-        <div class="aiflash-item aiflash-card-row">
-          <div class="aiflash-card-row-main">
-            ${this.cardContentHTML(card)}
-          </div>
-          <div class="aiflash-card-meta">
-            <span>${card.blockID ? "原生闪卡" : "本地旧卡"}</span>
-            <span>${card.due ? `到期 ${this.esc(card.due)}` : card.state !== "" ? `状态 ${this.esc(card.state)}` : "已加入"}</span>
-            <div class="aiflash-card-actions">
-              <button class="b3-button b3-button--outline" data-open-block="${card.blockID || ""}">打开</button>
-              ${card.blockID ? `<button class="b3-button b3-button--outline" data-remove-card="${card.blockID}">移除</button>` : ""}
-              ${
-                card.blockID && moveOptions
-                  ? `
-                <select class="b3-select" data-move-card="${card.blockID}">
-                  <option value="">移动到...</option>
-                  ${moveOptions}
-                </select>`
-                  : ""
-              }
-            </div>
-          </div>
-        </div>`,
-          )
-          .join("")
-      : `<div class="aiflash-empty">当前原生卡包暂无卡片</div>`;
+    const moveOptions = lr.buildMoveOptions(this.state.packs, deckID, (t) => this.esc(t));
+    lib.innerHTML = lr.renderLibHTML(cards, moveOptions, (c) => this.cardContentHTML(c), (t) => this.esc(t));
     root.querySelectorAll("[data-open-block]").forEach((button) => {
       button.onclick = () => {
         const id = button.dataset.openBlock;
-        if (id) {
-          openTab({ app: this.app, doc: { id } });
-        }
+        if (id) openTab({ app: this.app, doc: { id } });
       };
     });
     root.querySelectorAll("[data-remove-card]").forEach((button) => {
-      button.onclick = () =>
-        this.removeNativeCard(button.dataset.removeCard, deckID);
+      button.onclick = () => this.removeNativeCard(button.dataset.removeCard, deckID);
     });
     root.querySelectorAll("[data-move-card]").forEach((select) => {
-      select.onchange = () =>
-        this.moveNativeCard(select.dataset.moveCard, select.value, deckID);
+      select.onchange = () => this.moveNativeCard(select.dataset.moveCard, select.value, deckID);
     });
   }
 
